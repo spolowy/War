@@ -1,0 +1,10 @@
+*.o
+*.d
+*.a
+.D*
+*.dSYM
+libft
+a.out
+ugly*
+woody_woodpacker
+woody
