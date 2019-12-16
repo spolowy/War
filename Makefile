@@ -6,7 +6,7 @@
 #    By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/04/10 17:19:11 by agrumbac          #+#    #+#              #
-#    Updated: 2019/12/19 23:28:03 by anselme          ###   ########.fr        #
+#    Updated: 2019/12/16 23:39:04 by nhaquet          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,6 +38,7 @@ SRC =	famine.s                      \
 	infect/polymorphic_seed.c     \
 	infect/random.c               \
 	infect/setup_payload.c        \
+	infect/generate_mprotect.c    \
 	main.c
 
 CC = clang

