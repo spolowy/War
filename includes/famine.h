@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/04 03:38:38 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/12/13 09:11:32 by anselme          ###   ########.fr       */
+/*   Updated: 2019/12/17 00:00:57 by nhaquet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,10 @@ void		infect_files_in(const char *path, uint64_t seed[2]);
 
 void		cypher(char *data, size_t size);
 void		decypher(char *data, size_t size);
+void 		mprotect_call(void);
 
 void		cypher_end(void);
 void		decypher_end(void);
+void 		mprotect_end(void);
 
 #endif

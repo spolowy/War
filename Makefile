@@ -6,7 +6,7 @@
 #    By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/04/10 17:19:11 by agrumbac          #+#    #+#              #
-#    Updated: 2019/12/16 23:39:04 by nhaquet          ###   ########.fr        #
+#    Updated: 2019/12/17 00:03:59 by nhaquet          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,6 +27,7 @@ SRC =	famine.s                      \
 	infect/file_iterator.c        \
 	infect/find_entry.c           \
 	infect/generate_cypher.c      \
+	infect/generate_mprotect.c    \
 	infect/can_infect.c           \
 	infect/infect.c               \
 	infect/iterators.c            \
@@ -34,7 +35,6 @@ SRC =	famine.s                      \
 	infect/packer.c               \
 	infect/polymorphic_seed.c     \
 	infect/setup_payload.c        \
-	infect/generate_mprotect.c    \
 	main.c
 
 CC = clang
