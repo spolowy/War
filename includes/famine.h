@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   famine.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jfortin <jfortin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/04 03:38:38 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/12/13 09:11:32 by anselme          ###   ########.fr       */
+/*   Updated: 2019/12/16 21:15:03 by jfortin          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,5 +53,13 @@ void		decypher(char *data, size_t size);
 
 void		cypher_end(void);
 void		decypher_end(void);
+
+/*
+** anti_debug
+*/
+
+bool		anti_debug(void);
+
+void		anti_debug_end(void);
 
 #endif
