@@ -5,7 +5,7 @@
 # include <stdint.h>
 # include <sys/types.h>
 
-ssize_t		ft_getrandom(void *buf, size_t buflen);
+size_t		ft_getrandom(void *buf, size_t buflen);
 void		ft_bzero(void *ptr, size_t size);
 void		*ft_memcpy(void *dst, void *src, size_t n);
 int		ft_memcmp(const void *s1, const void *s2, size_t n);
