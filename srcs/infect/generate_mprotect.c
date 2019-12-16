@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-bool	generate_mprotec(char *buffer, uint64_t seed, size_t size)
+bool	generate_mprotect(char *buffer, uint64_t seed, size_t size)
 {
 	uint8_t op [28];
 
