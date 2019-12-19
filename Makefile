@@ -6,7 +6,8 @@
 #    By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/04/10 17:19:11 by agrumbac          #+#    #+#              #
-#    Updated: 2019/12/17 00:03:59 by nhaquet          ###   ########.fr        #
+#    Updated: 2019/12/19 18:17:01 by nhaquet          ###   ########.fr        #
+#    Updated: 2019/12/14 19:08:57 by anselme          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,6 +34,7 @@ SRC =	famine.s                      \
 	infect/iterators.c            \
 	infect/metamorph_self.c       \
 	infect/packer.c               \
+	infect/permutation.c          \
 	infect/polymorphic_seed.c     \
 	infect/setup_payload.c        \
 	main.c

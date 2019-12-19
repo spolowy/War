@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/10 23:43:29 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/06/07 12:43:00 by agrumbac         ###   ########.fr       */
+/*   Updated: 2019/12/19 01:01:32 by anselme          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ static bool	find_entry_shdr(struct safe_pointer info, const size_t offset, void 
 	struct entry		*stored_entry   = closure->stored_entry;
 	Elf64_Shdr		*elf64_sect_hdr = safe(offset, sizeof(Elf64_Shdr));
 
-	if (!elf64_sect_hdr) return errors(ERR_CORRUPT, '7','1');
+	if (!elf64_sect_hdr) errors(ERR_FILE, _ERR_BAD_SHDR_OFF);
 
 	const Elf64_Addr	sh_addr = (elf64_sect_hdr->sh_addr);
 	const Elf64_Xword	sh_size = (elf64_sect_hdr->sh_size);
@@ -57,7 +57,7 @@ static bool	find_entry_phdr(struct safe_pointer info, const size_t offset, void 
 	struct entry		*stored_entry  = closure->stored_entry;
 	Elf64_Phdr		*elf64_seg_hdr = safe(offset, sizeof(Elf64_Phdr));
 
-	if (!elf64_seg_hdr) return errors(ERR_CORRUPT, '7','2');
+	if (!elf64_seg_hdr) return errors(ERR_FILE, _ERR_BAD_PHDR_OFF);
 
 	const Elf64_Addr	p_vaddr = (elf64_seg_hdr->p_vaddr);
 	const Elf64_Xword	p_memsz = (elf64_seg_hdr->p_memsz);
@@ -73,28 +73,28 @@ bool		find_entry(struct entry *original_entry, struct safe_pointer info)
 	Elf64_Ehdr	*safe_elf64_hdr;
 
 	safe_elf64_hdr = safe(0, sizeof(Elf64_Ehdr));
-	if (!safe_elf64_hdr) return errors(ERR_CORRUPT, '7','3');
+	if (!safe_elf64_hdr) return errors(ERR_FILE, _ERR_CANT_READ_ELFHDR);
 	closure.e_entry = (safe_elf64_hdr->e_entry);
 
 	ft_bzero(original_entry, sizeof(*original_entry));
 	closure.stored_entry = original_entry;
 
 	if (!foreach_phdr(info, find_entry_phdr, &closure))
-		return errors(ERR_THROW, '7','4');
-	if (!original_entry->safe_phdr)
-		return errors(ERR_CORRUPT, '7','5');
+		return errors(ERR_THROW, _ERR_FIND_ENTRY);
+	if (!original_entry->safe_phdr) // TODO is this check actually useful?
+		return false;
 
 	if (!foreach_shdr(info, find_entry_shdr, &closure))
-		return errors(ERR_THROW, '7','6');
-	if (!original_entry->safe_shdr)
-		return errors(ERR_CORRUPT, '7','7');
+		return errors(ERR_THROW, _ERR_FIND_ENTRY);
+	if (!original_entry->safe_shdr) // TODO is this check actually useful?
+		return false;
 
 	const Elf64_Addr sh_addr  = (original_entry->safe_shdr->sh_addr);
 
 	original_entry->offset_in_section = closure.e_entry - sh_addr;
 
 	if (original_entry->end_of_last_section == 0)
-		return errors(ERR_CORRUPT, '7','8');
+		return errors(ERR_FILE, _ERR_NO_SECT_IN_ENTRY_SEG);
 
 	return (true);
 }

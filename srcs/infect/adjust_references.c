@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/13 14:56:28 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/06/10 19:35:42 by agrumbac         ###   ########.fr       */
+/*   Updated: 2019/12/19 00:36:26 by anselme          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ static bool	shift_phdr_position(struct safe_pointer info, const size_t offset, v
 	struct data	*closure = data;
 	Elf64_Phdr	*phdr    = safe(offset, sizeof(Elf64_Phdr));
 
-	if (phdr == NULL) return errors(ERR_CORRUPT, '2','1');
+	if (phdr == NULL) return errors(ERR_FILE, _ERR_BAD_PHDR_OFF);
 
 	Elf64_Off	p_offset = phdr->p_offset;
 
@@ -41,7 +41,7 @@ static bool	shift_shdr_position(struct safe_pointer info, const size_t offset, v
 	struct data 	*closure = data;
 	Elf64_Shdr	*shdr    = safe(offset, sizeof(Elf64_Shdr));
 
-	if (shdr == NULL) return errors(ERR_CORRUPT, '2','2');
+	if (shdr == NULL) return errors(ERR_FILE, _ERR_BAD_SHDR_OFF);
 
 	Elf64_Off	sh_offset = shdr->sh_offset;
 
@@ -87,15 +87,15 @@ bool		adjust_references(const struct safe_pointer info, size_t shift_amount, con
 
 	Elf64_Ehdr	*elf_hdr = safe(0, sizeof(Elf64_Ehdr));
 
-	if (elf_hdr == NULL) return errors(ERR_CORRUPT, '2','3');
+	if (elf_hdr == NULL) return errors(ERR_FILE, _ERR_CANT_READ_ELFHDR);
 
 	adjust_phdr_table_offset(elf_hdr, shift_amount, closure.end_last_sect);
 	adjust_shdr_table_offset(elf_hdr, shift_amount, closure.end_last_sect);
 
 	if (!foreach_phdr(info, shift_phdr_position, &closure))
-		return errors(ERR_THROW, '2','4');
+		return errors(ERR_THROW, _ERR_ADJUST_REFERENCES);
 	if (!foreach_shdr(info, shift_shdr_position, &closure))
-		return errors(ERR_THROW, '2','5');
+		return errors(ERR_THROW, _ERR_ADJUST_REFERENCES);
 
 	return true;
 }

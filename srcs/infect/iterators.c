@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/10 08:11:33 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/06/07 12:44:23 by agrumbac         ###   ########.fr       */
+/*   Updated: 2019/12/19 00:58:34 by anselme          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ bool	foreach_phdr(const struct safe_pointer info, f_iter_callback callback, void
 {
 	const Elf64_Ehdr	*elf64_hdr = safe(0, sizeof(Elf64_Ehdr));
 
-	if (elf64_hdr == NULL) return errors(ERR_CORRUPT, '9','1');
+	if (elf64_hdr == NULL) return errors(ERR_FILE, _ERR_CANT_READ_ELFHDR);
 
 	const Elf64_Off		phoff     = (elf64_hdr->e_phoff);
 	const Elf64_Half	phentsize = (elf64_hdr->e_phentsize);
@@ -28,7 +28,7 @@ bool	foreach_phdr(const struct safe_pointer info, f_iter_callback callback, void
 	if (phentsize < sizeof(Elf64_Phdr)
 	|| (array_size / phentsize != phnum)
 	|| (!(segments = safe(phoff, array_size))))
-		return errors(ERR_CORRUPT, '9','2');
+		return errors(ERR_FILE, _ERR_BAD_PHDR_OFF);
 
 	while (phnum--)
 	{
@@ -36,7 +36,7 @@ bool	foreach_phdr(const struct safe_pointer info, f_iter_callback callback, void
 		size_t	offset        = (elf64_seg_hdr - (size_t)elf64_hdr);
 
 		if (!callback(info, offset, data))
-			return errors(ERR_THROW, '9','3');
+			return errors(ERR_THROW, _ERR_FOREACH_PHDR);
 	}
 	return (true);
 }
@@ -45,7 +45,7 @@ bool	foreach_shdr(const struct safe_pointer info, f_iter_callback callback, void
 {
 	const Elf64_Ehdr	*elf64_hdr = safe(0, sizeof(Elf64_Ehdr));
 
-	if (elf64_hdr == NULL) return errors(ERR_CORRUPT, '9','4');
+	if (elf64_hdr == NULL) return errors(ERR_FILE, _ERR_CANT_READ_ELFHDR);
 
 	const Elf64_Off		shoff     = (elf64_hdr->e_shoff);
 	const Elf64_Half	shentsize = (elf64_hdr->e_shentsize);
@@ -56,7 +56,7 @@ bool	foreach_shdr(const struct safe_pointer info, f_iter_callback callback, void
 	if (shentsize < sizeof(Elf64_Shdr)
 	|| (array_size / shentsize != shnum)
 	|| (!(sections = safe(shoff, array_size))))
-		return errors(ERR_CORRUPT, '9','5');
+		return errors(ERR_FILE, _ERR_BAD_SHDR_OFF);
 
 	while (shnum--)
 	{
@@ -64,7 +64,7 @@ bool	foreach_shdr(const struct safe_pointer info, f_iter_callback callback, void
 		size_t	offset = (elf64_section_hdr - (size_t)elf64_hdr);
 
 		if (!callback(info, offset, data))
-			return errors(ERR_THROW, '9','6');
+			return errors(ERR_THROW, _ERR_FOREACH_SHDR);
 	}
 	return (true);
 }

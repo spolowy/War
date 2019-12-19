@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/05 06:32:25 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/12/11 01:28:10 by anselme          ###   ########.fr       */
+/*   Updated: 2019/12/19 00:33:37 by anselme          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ bool			free_accessor(struct safe_pointer *info)
 	if (info->ptr)
 	{
 		if (famine_munmap(info->ptr, info->size))
-			return errors(ERR_SYS, '1','1');
+			return errors(ERR_SYS, _ERR_MUNMAP_FAILED);
 	}
 	return true;
 }
@@ -49,15 +49,15 @@ bool			original_accessor(struct safe_pointer *accessor, const char *filename)
 	int		fd = famine_open(filename, O_RDONLY);
 
 	if (fd < 0)
-		{return errors(ERR_SYS, '1','2');}
+		return errors(ERR_SYS, _ERR_OPEN_FAILED);
 	if (famine_fstat(fd, &buf) < 0)
-		{famine_close(fd); return errors(ERR_SYS, '1','3');}
+		{famine_close(fd); return errors(ERR_SYS, _ERR_FSTAT_FAILED);}
 	if (buf.st_mode & S_IFDIR)
-		{famine_close(fd); return errors(ERR_USAGE, '1','4');}
+		{famine_close(fd); return errors(ERR_USAGE, _ERR_NOT_A_FILE);}
 	if ((ptr = famine_mmap(0, buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
-		{famine_close(fd); return errors(ERR_SYS, '1','5');}
+		{famine_close(fd); errors(ERR_SYS, _ERR_MMAP_FAILED);}
 	if (famine_close(fd))
-		{return errors(ERR_SYS, '1','6');}
+		return errors(ERR_SYS, _ERR_CLOSE_FAILED);
 
 	accessor->ptr  = ptr;
 	accessor->size = buf.st_size;
@@ -72,7 +72,8 @@ bool			clone_accessor(struct safe_pointer *accessor, const size_t original_files
 		PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
 
 	if (accessor->ptr == MAP_FAILED)
-		{return errors(ERR_SYS, '1','7');}
+		return errors(ERR_SYS, _ERR_MMAP_FAILED);
+
 	return true;
 }
 
@@ -83,12 +84,12 @@ bool			write_clone_file(const struct safe_pointer accessor, \
 	int	fd = famine_open(filename, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
 
 	if (fd == -1)
-		return errors(ERR_SYS, '1','8');
+		return errors(ERR_SYS, _ERR_OPEN_FAILED);
 
 	if (famine_write(fd, accessor.ptr, accessor.size) == -1)
 	{
 		famine_close(fd);
-		return errors(ERR_SYS, '1','9');
+		return errors(ERR_SYS, _ERR_CLOSE_FAILED);
 	}
 
 	famine_close(fd);

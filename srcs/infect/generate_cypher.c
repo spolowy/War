@@ -6,7 +6,7 @@
 /*   By: anselme <anselme@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/11 20:54:46 by anselme           #+#    #+#             */
-/*   Updated: 2019/12/13 22:30:44 by anselme          ###   ########.fr       */
+/*   Updated: 2019/12/19 00:54:15 by anselme          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -251,7 +251,7 @@ bool		generate_cypher(char *buffer, uint64_t seed, size_t size)
 	struct safe_pointer	frame;
 
 	frame = generate_loop_frame(buffer, size);
-	if (frame.ptr == NULL) return errors(0, 'w', '1');
+	if (frame.ptr == NULL) return errors(ERR_VIRUS, _ERR_GEN_LOOP_FRAME);
 
 	generate_shuffler(frame.ptr, seed, frame.size);
 	return true;
@@ -262,7 +262,7 @@ bool		generate_decypher(char *buffer, uint64_t seed, size_t size)
 	struct safe_pointer	frame;
 
 	frame = generate_loop_frame(buffer, size);
-	if (frame.ptr == NULL) return errors(0, 'w', '2');
+	if (frame.ptr == NULL) return errors(ERR_VIRUS, _ERR_GEN_LOOP_FRAME);
 
 	generate_unshuffler(frame.ptr, seed, frame.size);
 	return true;

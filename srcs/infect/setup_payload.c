@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/11 00:10:33 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/12/13 09:08:54 by anselme          ###   ########.fr       */
+/*   Updated: 2019/12/19 01:00:41 by anselme          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ bool		setup_payload(const struct entry *clone_entry, const struct safe_pointer i
 	void	*virus_location      = safe(virus_off, virus_size);
 
 	if (!payload_location || !constants_location || !virus_location)
-		return errors(ERR_CORRUPT, 'b','1');
+		return errors(ERR_VIRUS, _ERR_IMPOSSIBLE);
 
 	ft_memcpy(payload_location, (void *)famine_entry, payload_size);
 	ft_memcpy(constants_location, &constants, sizeof(constants));
