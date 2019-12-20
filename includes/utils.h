@@ -12,6 +12,7 @@ int		ft_memcmp(const void *s1, const void *s2, size_t n);
 char		*ft_strcat(char *s1, char *s2);
 char		*ft_strcpy(char *dst, const char *src);
 size_t		ft_strlen(const char *s);
+int		dprintf(int fd, char *fmt, ...);
 char		*ft_strstr(const char *s1, const char *s2);
 int		ft_putstr(const char *str);
 void   		ft_putu64(uint64_t n);
