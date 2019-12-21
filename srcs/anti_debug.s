@@ -7,7 +7,7 @@ BITS 64
 %define DATA			0
 
 ;	long	ptrace(enum __ptrace_request request, pid_t pid, void *addr, void *data)
-;				   | 			%rdi 			|	%rsi   |	 %rdx  | 	%rcx   | 		%r8 and %r9
+;				   | 			%rdi		    |   %rsi   |    %rdx   |    %r10   |	 %r8 and %r9.
 ;	long	ptrace(|		PTRACE_TRACEME		|	  0	   | 	NULL   |	 0		);
 
 ;	bool	anti_debug(void)
@@ -23,9 +23,8 @@ anti_debug:
 	; mov rdi, PTRACE_TRACEME
 	; mov rsi, PID
 	; mov rdx, ADDR
-	; mov rcx, DATA
+	; mov r10, DATA
 
-	; mov r10, rcx
 	; mov rax, SYS_PTRACE
 	; syscall
 	; test rax, rax
@@ -34,8 +33,8 @@ anti_debug:
 	; leave
 	; ret
 
-	db "123456789012"
-	db "123456789012"
-	db "123456789012"
-	db "123456789012"
+	db "0123456789"
+	db "0123456789"
+	db "0123456789"
+	db "0123456789"
 anti_debug_end:

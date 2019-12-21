@@ -20,6 +20,7 @@ NAME = war
 # [LAUNCHER]  _start       -> EOF
 
 SRC =	famine.s                      \
+	anti_debug.s                  \
 	decypher.s                    \
 	detect_spy.s                  \
 	infect/virus.c                \

