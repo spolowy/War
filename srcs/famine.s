@@ -10,6 +10,8 @@
 section .text
 	global famine_entry
 	global mark_below
+	global mprotect_call
+	global mprotect_end
 	global return_to_client
 
 	global mprotect_call
