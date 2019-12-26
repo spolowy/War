@@ -82,6 +82,13 @@ static bool	define_shift_amount(const struct entry *original_entry, size_t *shif
 
 bool		elf64_packer(const struct famine food, size_t original_file_size)
 {
+	struct field code_caves[1024];
+	size_t found_caves;
+
+	found_caves = find_code_caves(code_caves, ARRAY_SIZE(code_caves));
+
+
+
 	struct entry	original_entry;
 	struct entry	clone_entry;
 	size_t		shift_amount;

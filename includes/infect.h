@@ -51,6 +51,12 @@ struct				entry
 	size_t			offset_in_section;
 };
 
+struct				field
+{
+	size_t			offset; // inclusive begin offset
+	size_t			end;    // exclusive end offset
+};
+
 typedef	bool	(*f_iter_callback)(struct safe_pointer info, size_t offset, void *data);
 
 /*

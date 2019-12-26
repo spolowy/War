@@ -20,6 +20,8 @@
 # include <stddef.h>
 # include <sys/types.h>
 
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof(*x))
+
 struct client_info
 {
 	uint32_t	key[4];
