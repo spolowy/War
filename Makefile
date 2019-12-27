@@ -6,7 +6,7 @@
 #    By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/04/10 17:19:11 by agrumbac          #+#    #+#              #
-#    Updated: 2019/12/26 23:53:18 by anselme          ###   ########.fr        #
+#    Updated: 2019/12/27 19:56:54 by grolash          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -105,13 +105,13 @@ ${OBJDIR}/%.o: ${SRCDIR}/%.s
 	@echo ${Y}Compiling [$@]...${X}
 	@/bin/mkdir -p ${OBJDIR} ${OBJDIR}/virus
 	@${AS} ${ASFLAGS} -o $@ $<
-	@printf ${UP}${CUT}
+	@echo ${UP}${CUT}
 
 ${OBJDIR}/%.o: ${SRCDIR}/%.c
 	@echo ${Y}Compiling [$@]...${X}
 	@/bin/mkdir -p ${OBJDIR} ${OBJDIR}/virus
 	@${CC} ${CFLAGS} ${LDFLAGS} -c -o $@ $<
-	@printf ${UP}${CUT}
+	@echo ${UP}${CUT}
 
 ############################### DEBUG ##########################################
 
@@ -134,20 +134,20 @@ re: fclean all
 ############################## DECORATION ######################################
 
 art:
-	@echo ${BB}
-	@echo "                 _   _"
-	@echo "              __/"${BM}"o"${BB}"'V'"${BG}"o"${BB}"\\__"
-	@echo "           __/"${BC}"o"${BB}" \\  :  / "${BY}"o"${BB}"\\__"
-	@echo "          /"${BM}"o"${BB}" \`.  \\ : /  .' "${BR}"o"${BB}"\\"
-	@echo "         _\\    '. "${WR}"_"${X}${BB}"\""${WR}"_"${X}${BB}" .'    /_"
-	@echo "        /"${BY}"o"${BB}" \`-._  '\\\v/'  _.-\` "${BC}"o"${BB}"\\"
-	@echo "        \\_     \`-./ \\.-\`     _/"
-	@echo "       /"${BR}"o"${BB}" \`\`---._/   \\_.---'' "${BG}"o"${BB}"\\"
-	@echo "       \\_________\\   /_________/"
-	@echo "                 '\\_/'"
-	@echo "                 _|_|_"
-	@echo "            2AC9C3"${BR}"WAR"${BB}"558BEC"
-	@echo ${X}
+	@printf ${BB}
+	@printf "                 _   _\n"
+	@printf "              __/"${BM}"o"${BB}"'V'"${BG}"o"${BB}"\\__\n"
+	@printf "           __/"${BC}"o"${BB}" \\  :  / "${BY}"o"${BB}"\\__\n"
+	@printf "          /"${BM}"o"${BB}" \`.  \\ : /  .' "${BR}"o"${BB}"\\ \n"
+	@printf "         _\\    '. "${WR}"_"${X}${BB}"\""${WR}"_"${X}${BB}" .'    /_\n"
+	@printf "        /"${BY}"o"${BB}" \`-._  '\\\v/'  _.-\` "${BC}"o"${BB}"\\ \n"
+	@printf "        \\_     \`-./ \\.-\`     _/\n"
+	@printf "       /"${BR}"o"${BB}" \`\`---._/   \\_.---'' "${BG}"o"${BB}"\\ \n"
+	@printf "       \\_________\\   /_________/\n"
+	@printf "                 '\\_/'\n"
+	@printf "                 _|_|_\n"
+	@printf "            2AC9C3"${BR}"WAR"${BB}"558BEC\n"
+	@printf ${X}
 
 .PHONY: all clean fclean re art
 
