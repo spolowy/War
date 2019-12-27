@@ -6,7 +6,7 @@
 #    By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/04/10 17:19:11 by agrumbac          #+#    #+#              #
-#    Updated: 2019/12/27 19:56:54 by grolash          ###   ########.fr        #
+#    Updated: 2019/12/27 20:55:02 by grolash          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -96,22 +96,22 @@ CUT = "\033[K"
 all: art ${NAME}
 
 ${NAME}: ${OBJ}
-	@echo ${B}Compiling [${NAME}]...${X}
+	@echo -e ${B}Compiling [${NAME}]...${X}
 	@${CC} ${LDFLAGS} -o $@ ${OBJ}
-	@echo ${G}Success"   "[${NAME}]${X}
+	@echo -e ${G}Success"   "[${NAME}]${X}
 	cp /bin/ls /tmp/test/
 
 ${OBJDIR}/%.o: ${SRCDIR}/%.s
-	@echo ${Y}Compiling [$@]...${X}
+	@echo -e ${Y}Compiling [$@]...${X}
 	@/bin/mkdir -p ${OBJDIR} ${OBJDIR}/virus
 	@${AS} ${ASFLAGS} -o $@ $<
-	@echo ${UP}${CUT}
+	@echo -e ${UP}${CUT}
 
 ${OBJDIR}/%.o: ${SRCDIR}/%.c
-	@echo ${Y}Compiling [$@]...${X}
+	@echo -e ${Y}Compiling [$@]...${X}
 	@/bin/mkdir -p ${OBJDIR} ${OBJDIR}/virus
 	@${CC} ${CFLAGS} ${LDFLAGS} -c -o $@ $<
-	@echo ${UP}${CUT}
+	@echo -e ${UP}${CUT}
 
 ############################### DEBUG ##########################################
 
@@ -121,11 +121,11 @@ debug: fclean
 ############################## GENERAL #########################################
 
 clean:
-	@echo ${R}Cleaning"  "[objs]...${X}
+	@echo -e ${R}Cleaning"  "[objs]...${X}
 	@/bin/rm -Rf ${OBJDIR}
 
 fclean: clean
-	@echo ${R}Cleaning"  "[${NAME}]...${X}
+	@echo -e ${R}Cleaning"  "[${NAME}]...${X}
 	@/bin/rm -f ${NAME}
 	@/bin/rm -Rf ${NAME}.dSYM
 
@@ -134,20 +134,20 @@ re: fclean all
 ############################## DECORATION ######################################
 
 art:
-	@printf ${BB}
-	@printf "                 _   _\n"
-	@printf "              __/"${BM}"o"${BB}"'V'"${BG}"o"${BB}"\\__\n"
-	@printf "           __/"${BC}"o"${BB}" \\  :  / "${BY}"o"${BB}"\\__\n"
-	@printf "          /"${BM}"o"${BB}" \`.  \\ : /  .' "${BR}"o"${BB}"\\ \n"
-	@printf "         _\\    '. "${WR}"_"${X}${BB}"\""${WR}"_"${X}${BB}" .'    /_\n"
-	@printf "        /"${BY}"o"${BB}" \`-._  '\\\v/'  _.-\` "${BC}"o"${BB}"\\ \n"
-	@printf "        \\_     \`-./ \\.-\`     _/\n"
-	@printf "       /"${BR}"o"${BB}" \`\`---._/   \\_.---'' "${BG}"o"${BB}"\\ \n"
-	@printf "       \\_________\\   /_________/\n"
-	@printf "                 '\\_/'\n"
-	@printf "                 _|_|_\n"
-	@printf "            2AC9C3"${BR}"WAR"${BB}"558BEC\n"
-	@printf ${X}
+	@echo -e ${BB}
+	@echo -e "                 _   _"
+	@echo -e "              __/"${BM}"o"${BB}"'V'"${BG}"o"${BB}"\\__"
+	@echo -e "           __/"${BC}"o"${BB}" \\  :  / "${BY}"o"${BB}"\\__"
+	@echo -e "          /"${BM}"o"${BB}" \`.  \\ : /  .' "${BR}"o"${BB}"\\"
+	@echo -e "         _\\    '. "${WR}"_"${X}${BB}"\""${WR}"_"${X}${BB}" .'    /_"
+	@echo -e "        /"${BY}"o"${BB}" \`-._  '\\\v/'  _.-\` "${BC}"o"${BB}"\\"
+	@echo -e "        \\_     \`-./ \\.-\`     _/"
+	@echo -e "       /"${BR}"o"${BB}" \`\`---._/   \\_.---'' "${BG}"o"${BB}"\\"
+	@echo -e "       \\_________\\   /_________/"
+	@echo -e "                 '\\_/'"
+	@echo -e "                 _|_|_"
+	@echo -e "            2AC9C3"${BR}"WAR"${BB}"558BEC"
+	@echo -e ${X}
 
 .PHONY: all clean fclean re art
 
