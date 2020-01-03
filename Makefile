@@ -1,41 +1,50 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2018/04/10 17:19:11 by agrumbac          #+#    #+#              #
+#    Updated: 2020/01/03 21:53:00 by grolash          ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
 
 ############################## BIN #############################################
 
 NAME = war
 
 # SRC File order matters!
-# [LOADER]    famine_entry -> virus
+# [LOADER]    loader_entry -> virus
 # [VIRUS]     virus        -> _start
 # [LAUNCHER]  _start       -> EOF
 
-SRC =	famine.s                      \
+SRC =	loader.s                      \
 	decypher.s                    \
 	detect_spy.s                  \
-	infect/virus.c                \
-	infect/accessors.c            \
-	infect/adjust_references.c    \
-	infect/copy_to_clone.c        \
-	infect/cypher.s               \
-	infect/file_iterator.c        \
-	infect/find_entry.c           \
-	infect/generate_cypher.c      \
-	infect/generate_mprotect.c    \
-	infect/can_infect.c           \
-	infect/infect.c               \
-	infect/iterators.c            \
-	infect/log.c                  \
-	infect/metamorph_self.c       \
-	infect/disasm_length.c        \
-	infect/disasm.c               \
-	infect/packer.c               \
-	infect/permutation.c          \
-	infect/polymorphic_seed.c     \
-	infect/random.c               \
-	infect/setup_payload.c        \
-	infect/syscall.c              \
-	infect/utils.c                \
-	infect/generate_mprotect.c    \
-	main.c
+	virus/generate_mprotect.c       \
+	virus/virus.c                \
+	virus/accessors.c            \
+	virus/adjust_references.c    \
+	virus/copy_to_clone.c        \
+	virus/cypher.s               \
+	virus/disasm_length.c        \
+	virus/disasm.c               \
+	virus/elf64_iterators.c      \
+	virus/file_iterator.c        \
+	virus/find_entry.c           \
+	virus/generate_cypher.c      \
+	virus/infect.c               \
+	virus/infection_engine.c     \
+	virus/log.c                  \
+	virus/metamorph_self.c       \
+	virus/permutation.c          \
+	virus/polymorphic_seed.c     \
+	virus/random.c               \
+	virus/setup_payload.c        \
+	virus/syscall.c              \
+	virus/utils.c                \
+	start.c
 
 CC = clang
 
@@ -95,13 +104,13 @@ ${NAME}: ${OBJ}
 
 ${OBJDIR}/%.o: ${SRCDIR}/%.s
 	@echo ${Y}Compiling [$@]...${X}
-	@/bin/mkdir -p ${OBJDIR} ${OBJDIR}/infect
+	@/bin/mkdir -p ${OBJDIR} ${OBJDIR}/virus
 	@${AS} ${ASFLAGS} -o $@ $<
 	@printf ${UP}${CUT}
 
 ${OBJDIR}/%.o: ${SRCDIR}/%.c
 	@echo ${Y}Compiling [$@]...${X}
-	@/bin/mkdir -p ${OBJDIR} ${OBJDIR}/infect
+	@/bin/mkdir -p ${OBJDIR} ${OBJDIR}/virus
 	@${CC} ${CFLAGS} ${LDFLAGS} -c -o $@ $<
 	@printf ${UP}${CUT}
 

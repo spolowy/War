@@ -38,69 +38,69 @@
 						"  ret\n");
 
 
-inline ssize_t famine_read(_u int fd, _u void *buf, _u size_t count)
+inline ssize_t sys_read(_u int fd, _u void *buf, _u size_t count)
 {
 	wrap_syscall(SYS_READ);
 	__builtin_unreachable();
 }
 
-inline ssize_t	famine_write(_u int fd, _u const void *buf, _u size_t count)
+inline ssize_t	sys_write(_u int fd, _u const void *buf, _u size_t count)
 {
 	wrap_syscall(SYS_WRITE);
 	__builtin_unreachable();
 }
 
-inline int	famine_open(_u const char *pathname, _u int flags, ...)
+inline int	sys_open(_u const char *pathname, _u int flags, ...)
 {
 	wrap_syscall(SYS_OPEN);
 	__builtin_unreachable();
 }
 
-inline int	famine_close(_u int fd)
+inline int	sys_close(_u int fd)
 {
 	wrap_syscall(SYS_CLOSE);
 	__builtin_unreachable();
 }
 
-inline int	famine_fstat(_u int fd, _u struct stat *statbuf)
+inline int	sys_fstat(_u int fd, _u struct stat *statbuf)
 {
 	wrap_syscall(SYS_FSTAT);
 	__builtin_unreachable();
 }
 
-inline void	*famine_mmap(_u void *addr, _u size_t length, _u int prot, _u int flags, _u int fd, _u
+inline void	*sys_mmap(_u void *addr, _u size_t length, _u int prot, _u int flags, _u int fd, _u
 		off_t offset)
 {
 	wrap_syscall(SYS_MMAP);
 	__builtin_unreachable();
 }
 
-inline int	famine_mprotect(_u void *addr, _u size_t len, _u int prot)
+inline int	sys_mprotect(_u void *addr, _u size_t len, _u int prot)
 {
 	wrap_syscall(SYS_MPROTEC);
 	__builtin_unreachable();
 }
 
-inline int	famine_munmap(_u void *addr, _u size_t length)
+inline int	sys_munmap(_u void *addr, _u size_t length)
 {
 	wrap_syscall(SYS_MUNMAP);
 	__builtin_unreachable();
 }
 
-inline int	famine_exit(_u int status)
+inline int	sys_exit(_u int status)
 {
 	wrap_syscall(SYS_EXIT);
 	__builtin_unreachable();
 }
 
-inline long	famine_ptrace(_u enum __ptrace_request request,
+inline long	sys_ptrace(_u enum __ptrace_request request,
 	_u pid_t pid, _u void *addr, _u void *data)
 {
 	wrap_syscall(SYS_PTRACE);
 	__builtin_unreachable();
 }
 
-inline int	famine_getdents64(_u unsigned int fd, _u struct dirent64 *dirp, _u unsigned int count)
+inline int	sys_getdents64(_u unsigned int fd, _u struct dirent64 *dirp, _u unsigned int count)
 {
 	wrap_syscall(SYS_GETDENTS64);
 	__builtin_unreachable();

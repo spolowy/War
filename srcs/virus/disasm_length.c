@@ -1,6 +1,25 @@
 
-#include "disasm.h"
+#include "disasm_utils.h"
 
+/* sizes in byte */
+# define BYTE		1
+# define WORD		2
+# define DWORD		4
+# define PWORD		6
+# define QWORD		8
+# define TWORD		10
+/* opcode flags  */
+# define MODRM		(1 << 0)            /* MODRM byte       */
+# define TEST_F6	(1 << 1)            /* <test> exception */
+# define TEST_F7	(1 << 2)            /* <test> exception */
+# define TEST		(TEST_F6 | TEST_F7)
+
+/*
+** Disassemble an instruction pointed by <code> for a maximum
+** length of <codelen>.
+** It HAVE to return a value between 1 and 15 included.
+** Returns 0 if failed.
+*/
 size_t		disasm_length(const void *code, size_t codelen)
 {
 	uint32_t	table_opcode_modrm_ext[TABLESIZE];
@@ -382,23 +401,24 @@ size_t		disasm_length(const void *code, size_t codelen)
 	table_660f_opcode_imm8[7]        = BITMASK32(0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,  /* e */
 					             0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0); /* f */
 
-	int8_t		defmem   = DWORD;
-	int8_t		defdata  = DWORD;
-	int8_t		datasize = 0;
-	int8_t		memsize  = 0;
-	int8_t		flags    = 0;
-	int8_t		prefix   = 0;
+	size_t		defmem   = QWORD;    /* memory size defined  */
+	size_t		defdata  = DWORD;    /* operand size defined */
+	size_t		memsize  = 0;        /* current memory size  */
+	size_t		datasize = 0;        /* current data size    */
+	int8_t		prefix   = 0;        /* prefix(es)           */
+	int8_t		flags    = 0;        /* flag(s)              */
 
 	uint8_t		*p = (uint8_t*)code;
-	uint8_t		opcode;
+	uint8_t		opcode;              /* current opcode */
 
-	codelen = codelen > INSTRUCTION_MAXLEN ? INSTRUCTION_MAXLEN : codelen;
+	/* set <codelen> to INSTRUCTION_MAXLEN if it exceeds it */
+	if (codelen > INSTRUCTION_MAXLEN) codelen = INSTRUCTION_MAXLEN;
 
 	next_opcode:
-	if (!codelen--) return EDISASM_LENGTH; /* Error if instruction is too long */
+	if (!codelen--) return 0; /* error if instruction is too long */
 	opcode = *p++;
 
-	/* Legacy / REX prefixes unused for disasm */
+	/* skip unused legacy / REX prefixes for this disassembler */
 	if (opcode == 0x26 || opcode == 0x2e
 	||  opcode == 0x36 || opcode == 0x3e
 	||  opcode == 0x64 || opcode == 0x65
@@ -406,140 +426,105 @@ size_t		disasm_length(const void *code, size_t codelen)
 	||  opcode == 0x44 || opcode == 0x45 || opcode == 0x46 || opcode == 0x47
 	||  opcode == 0x49 || opcode == 0x4a || opcode == 0x4b || opcode == 0x4c
 	||  opcode == 0x4d || opcode == 0x4e || opcode == 0x4f
-	||  opcode == 0xf0)
-	{
-		goto next_opcode;
-	}
-	/* Operand size override */
-	else if (opcode == 0x66)
-	{
-		defdata = WORD;
-		prefix |= OP_PREFIX_66;
-		goto next_opcode;
-	}
-	/* Address size override */
-	else if (opcode == 0x67)
-	{
-		defmem = DWORD;
-		goto next_opcode;
-	}
-	/* Mandatory prefixes */
-	else if (opcode == 0x0f)
-	{
-		prefix |= OP_PREFIX_0F;
-		goto next_opcode;
-	}
-	else if (opcode == 0xf2)
-	{
-		prefix |= OP_PREFIX_F2;
-		goto next_opcode;
-	}
-	else if (opcode == 0xf3)
-	{
-		prefix |= OP_PREFIX_F3;
-		goto next_opcode;
-	}
-	else if (opcode == 0x9b)
-	{
-		prefix |= OP_PREFIX_9B;
-		goto next_opcode;
-	}
-	/* REX.W prefix */
-	else if (opcode == 0x48)
-	{
-		flags |= REX;
-		defdata = DWORD, defmem = DWORD;
-		goto next_opcode;
-	}
+	||  opcode == 0xf0) {goto next_opcode;}
+	/* operand size override */
+	else if (opcode == 0x66) {defdata = WORD; prefix |= OP_PREFIX_66; goto next_opcode;}                   /* set operand size to 16-bit; get mandatory prefix */
+	/* address size override */
+	else if (opcode == 0x67) {defmem = DWORD; goto next_opcode;}                                           /* set memory size to 32-bit */
+	/* mandatory prefixes    */
+	else if (opcode == 0x0f) {prefix |= OP_PREFIX_0F; goto next_opcode;}                                   /* get mandatory prefix */
+	else if (opcode == 0xf2) {prefix |= OP_PREFIX_F2; goto next_opcode;}                                   /* get mandatory prefix */
+	else if (opcode == 0xf3) {prefix |= OP_PREFIX_F3; goto next_opcode;}                                   /* get mandatory prefix */
+	else if (opcode == 0x9b) {prefix |= OP_PREFIX_9B; goto next_opcode;}                                   /* get mandatory prefix */
+	/* REX.W operand size override */
+	else if (opcode == 0x48) {prefix |= OP_PREFIX_REX; defdata = QWORD; goto next_opcode;} /* get mandatory prefix; set operand size to 32-bit; set memory size to 32-bit */
 
-
-	if (prefix == OP_9B)
+	/* chooses specific tables for different mappings */
+	if (prefix == MAP_9B) /* 0x9b <opcode> */
 	{
 		if (CHECK_TABLE(table_9b_opcode_modrm_ext, opcode))
 			flags |= MODRM;
 	}
-	else if (prefix == OP_660F)
+	else if (prefix == MAP_660F)  /* 0x66 0x0f <opcode> */
 	{
 		if (CHECK_TABLE(table_660f_opcode_modrm_noext, opcode)
-		|| CHECK_TABLE(table_660f_opcode_modrm_ext, opcode))
+		||  CHECK_TABLE(table_660f_opcode_modrm_ext, opcode))
 			flags |= MODRM;
 		if (CHECK_TABLE(table_660f_opcode_imm8, opcode))
 			datasize += defdata;
 	}
-	else if (prefix == OP_F20F)
+	else if (prefix == MAP_F20F)  /* 0xf2 0x0f <opcode> */
 	{
 		if (CHECK_TABLE(table_f20f_opcode_modrm_noext, opcode))
 			flags |= MODRM;
 		if (CHECK_TABLE(table_f20f_opcode_imm8, opcode))
 			datasize += defdata;
 	}
-	else if (prefix == OP_F30F)
+	else if (prefix == MAP_F30F) /* 0xf3 0x0f <opcode> */
 	{
 		if (CHECK_TABLE(table_f30f_opcode_modrm_noext, opcode)
-		|| CHECK_TABLE(table_f30f_opcode_modrm_ext, opcode))
+		||  CHECK_TABLE(table_f30f_opcode_modrm_ext, opcode))
 			flags |= MODRM;
 		if (CHECK_TABLE(table_f30f_opcode_imm8, opcode))
 			datasize += defdata;
 	}
-	else if (prefix == OP_0F)
+	else if (prefix == MAP_0F)  /* 0x0f <opcode>       */
 	{
 		if (CHECK_TABLE(table_0f_opcode_modrm_noext, opcode)
-		|| CHECK_TABLE(table_0f_opcode_modrm_ext, opcode))
+		||  CHECK_TABLE(table_0f_opcode_modrm_ext, opcode))
 			flags |= MODRM;
 		if (CHECK_TABLE(table_0f_opcode_imm8, opcode))
 			datasize += defdata;
 		if (CHECK_TABLE(table_0f_opcode_imm16_32, opcode))
 			datasize += defdata;
 	}
-	else
+	else                       /* <opcode>            */
 	{
-		if (CHECK_TABLE(table_opcode_imm64, opcode) && (flags & REX)) return 10;
+		if (CHECK_TABLE(table_opcode_imm64, opcode) && (prefix & OP_PREFIX_REX))
+			defdata = QWORD; /* exception for 64-bit immediates */
 		if (CHECK_TABLE(table_opcode_modrm_noext, opcode)
 		||  CHECK_TABLE(table_opcode_modrm_ext, opcode))
 			flags |= MODRM;
-		if      (opcode == 0xf6) /* Exeption for <test> which has the same opcode as other instructions with different length */
+		if      (opcode == 0xf6) /* exception for <test> which has the same opcode as other instructions with different length */
 			flags |= TEST_F6;
 		else if (opcode == 0xf7)
 			flags |= TEST_F7;
 		if (CHECK_TABLE(table_opcode_imm8, opcode))
-			datasize += BYTE;
+			datasize += BYTE;    /* 1 byte immediate          */
 		if (CHECK_TABLE(table_opcode_imm16, opcode)
 		||  CHECK_TABLE(table_opcode_imm32, opcode))
-			datasize += defdata;
+			datasize += defdata; /* 2 or 4 byte immediate     */
 		if (CHECK_TABLE(table_opcode_mem16_32, opcode))
-			memsize  += defmem;
+			memsize  += defmem;  /* direct memory offset case */
 	}
 
+	/* MODRM byte management */
 	if (flags & MODRM)
 	{
-		if (!codelen--) return EDISASM_LENGTH; /* Error if instruction is too long */
+		if (!codelen--) return 0; /* error if instruction is too long */
 		opcode = *p++;
-		uint8_t		mod = opcode & 0b11000000;
+		uint8_t		mod = (opcode & 0b11000000) >> 6;
 		uint8_t		rm  = opcode & 0b00000111;
-		if ((flags & TEST) && (rm == 0b00000000 || rm == 0b00000001)) /* Exeption for <test> which has the same opcode as other instructions with different length */
+		if ((flags & TEST) && (rm == 0b00000000 || rm == 0b00000001)) /* <test> exception */
+		{datasize += flags & TEST_F7 ? defdata : BYTE;}
+		else if (mod != 0b11) /* addressing mode is not direct register addressing */
 		{
-			datasize += flags & TEST_F7 ? defdata : BYTE;
-		}
-		else if (mod != 0b11000000) /* If addressing mode is not register addressing */
-		{
-			if      (mod == 0b01000000) /* One byte signed displacement */
-			{ memsize += BYTE; }
-			else if (mod == 0b10000000) /* Four byte signed displacement */
-			{ memsize += defmem; }
-			if (defmem == WORD) /* If 16-bit mode (no SIB) */
+			if      (mod == 0b01) {memsize += BYTE;}   /* one byte signed displacement  */
+			else if (mod == 0b10) {memsize += defmem;} /* four byte signed displacement */
+			if (defmem == WORD) /* 16-bit mode (no SIB byte) */
 			{
-				if (mod == 0b00000000 && rm == 0b110) memsize += WORD; /* If 16-bit displacement */
+				if (mod == 0b00 && rm == 0b110) {memsize += WORD;} /* 16-bit displacement */
 			}
-			else /* SIB may be present */
+			else /* SIB byte may be present */
 			{
-				if (!codelen--) return EDISASM_LENGTH; /* Error if instruction is too long */
-				if (rm == 0b100) rm = *p++ & 0b111; /* SIB addressing and get base register */
-				if (mod == 0b00000000 && rm == 0b101) memsize += DWORD; /* 32-bit displacement mode */
+				if (!codelen--) return 0; /* error if instruction is too long */
+				if (rm == 0b100)                {rm = *p++ & 0b111;} /* SIB addressing and get base register */
+				if (mod == 0b00 && rm == 0b101) {memsize += DWORD;}  /* 32-bit displacement mode             */
 			}
 		}
 	}
 
-	if ((int64_t)codelen - (datasize + memsize) < 0) return EDISASM_LENGTH; /* Error if instruction is too long */
+	if ((datasize + memsize) > codelen) return 0; /* error if instruction is too long */
 	p += datasize + memsize;
 	return (void*)p - (void*)code;
 }

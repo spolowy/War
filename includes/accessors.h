@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/04 04:47:10 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/12/19 22:28:58 by anselme          ###   ########.fr       */
+/*   Updated: 2019/12/27 00:02:56 by anselme          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,49 +14,32 @@
 # define ACCESSORS_H
 
 #include <sys/types.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
 #include <stdbool.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "compiler_utils.h"
 
 /*
-** Bright facade for safe accessors
+** Safe pointers
+** - non NULL
+** - immutable
+** - points to valid memory
 */
 
-struct	safe_pointer
+struct	safe_ptr
 {
 	void	*ptr;
 	size_t	size;
 };
 
-/*
-** Dark side of the safe accessors...
-*/
-
-# define safe(ptr, size)	(safe_accessor(ptr, size, info))
+void	*safe(struct safe_ptr ref, size_t offset, size_t size);
+bool	free_accessor(struct safe_ptr *ref);
+bool	write_file(struct safe_ptr ref, const char *filename);
 
 /*
-** any accessor
+** Original and clone safe_ptr initializer
 */
 
-void	*safe_accessor(const size_t offset, const size_t size, \
-		const struct safe_pointer info);
-bool	free_accessor(struct safe_pointer *info);
-
-/*
-** original
-*/
-
-bool	original_accessor(struct safe_pointer *accessor, const char *filename);
-
-/*
-** clone
-*/
-
-bool	clone_accessor(struct safe_pointer *accessor, const size_t original_filesize);
-bool	write_clone_file(const struct safe_pointer accessor, \
-		const char *filename);
+bool	init_original_safe(struct safe_ptr *ref, const char *filename);
+bool	init_clone_safe(struct safe_ptr *ref, size_t original_filesize);
 
 #endif
