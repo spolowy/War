@@ -33,6 +33,6 @@ bool	generate_mprotect(char *buffer, uint64_t seed, size_t size)
 	op[16] = 0xba; op[17] = 0x07; op[18] = 0x00; op[19] = 0x00; op[20] = 0x00;
 	op[21] = 0xb8; op[22] = 0x0a; op[23] = 0x00; op[24] = 0x00; op[25] = 0x00;
 	op[26] = 0x0f; op[27] = 0x05;
-	memcpy(buffer, op, sizeof(op));
+	memcpy(buffer, op, size);
 	return true;
 }
