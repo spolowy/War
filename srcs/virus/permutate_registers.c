@@ -355,7 +355,10 @@ bool		permutate_registers(void *buffer, uint64_t seed, size_t size)
 	match[0b1110] = R14;
 	match[0b1111] = R15;
 
-	shuffle_registers(match, seed, 0b111);
+	// shuffle_registers(match, seed, 0b111);
+
+	match[0b0010] = RSI;
+	match[0b0110] = RDX;
 
 	/* convert masks to equivalent value */
 	match[0b0000] = mask_to_index(match[0b0000]);
@@ -381,6 +384,9 @@ bool		permutate_registers(void *buffer, uint64_t seed, size_t size)
 	{
 		instruction_length = disasm_length(buffer, size);
 		if (instruction_length == 0) break ;
+
+		if (size - instruction_length > size)
+			return errors(ERR_THROW, _ERR_PERMUTATE_REGISTERS);
 
 		if (!apply_match(buffer, instruction_length, match))
 			return errors(ERR_THROW, _ERR_PERMUTATE_REGISTERS);
