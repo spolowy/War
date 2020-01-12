@@ -16,10 +16,6 @@ section .text
 	global loader_entry
 	global loader_exit
 	global virus_header_struct
-	global mark_below
-	global mprotect_call
-	global mprotect_end
-	global return_to_client
 
 extern virus
 extern wrap_decypher
