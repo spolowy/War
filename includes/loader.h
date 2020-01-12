@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/04 03:38:38 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/12/27 01:24:52 by anselme          ###   ########.fr       */
+/*   Updated: 2020/01/05 15:50:36 by ichkamo          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,14 +39,21 @@ void		virus_header_struct(void);
 */
 
 bool		detect_spy(void);
+void		detect_spy_end(void);
 
 /*
 ** loader
 */
 
 void		loader_entry(void);
-void		mark_below(void);
-void		return_to_client(void);
+void		loader_exit(void);
+
+/*
+** wrap_mprotect
+*/
+
+void		wrap_mprotect(void);
+void		wrap_mprotect_end(void);
 
 /*
 ** cypher and decypher

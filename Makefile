@@ -6,7 +6,7 @@
 #    By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/04/10 17:19:11 by agrumbac          #+#    #+#              #
-#    Updated: 2020/01/03 21:53:00 by grolash          ###   ########.fr        #
+#    Updated: 2020/01/12 15:18:48 by ichkamo          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,31 +19,32 @@ NAME = war
 # [VIRUS]     virus        -> _start
 # [LAUNCHER]  _start       -> EOF
 
-SRC =	loader.s                      \
-	decypher.s                    \
-	detect_spy.s                  \
-	virus/generate_mprotect.c       \
-	virus/virus.c                \
-	virus/accessors.c            \
-	virus/adjust_references.c    \
-	virus/copy_to_clone.c        \
-	virus/cypher.s               \
-	virus/disasm_length.c        \
-	virus/disasm.c               \
-	virus/elf64_iterators.c      \
-	virus/file_iterator.c        \
-	virus/find_entry.c           \
-	virus/generate_cypher.c      \
-	virus/infect.c               \
-	virus/infection_engine.c     \
-	virus/log.c                  \
-	virus/metamorph_self.c       \
-	virus/permutation.c          \
-	virus/polymorphic_seed.c     \
-	virus/random.c               \
-	virus/setup_payload.c        \
-	virus/syscall.c              \
-	virus/utils.c                \
+SRC =	loader.s                       \
+	decypher.s                     \
+	detect_spy.s                   \
+	mprotect.s                     \
+	virus/virus.c                  \
+	virus/accessors.c              \
+	virus/adjust_references.c      \
+	virus/copy_to_clone.c          \
+	virus/cypher.s                 \
+	virus/disasm_length.c          \
+	virus/disasm.c                 \
+	virus/elf64_iterators.c        \
+	virus/file_iterator.c          \
+	virus/find_entry.c             \
+	virus/generate_cypher.c        \
+	virus/infect.c                 \
+	virus/infection_engine.c       \
+	virus/log.c                    \
+	virus/metamorph_self.c         \
+	virus/permutate_instructions.c \
+	virus/permutate_registers.c    \
+	virus/polymorphic_seed.c       \
+	virus/random.c                 \
+	virus/setup_payload.c          \
+	virus/syscall.c                \
+	virus/utils.c                  \
 	start.c
 
 CC = clang
@@ -100,6 +101,7 @@ ${NAME}: ${OBJ}
 	@echo ${B}Compiling [${NAME}]...${X}
 	@${CC} ${LDFLAGS} -o $@ ${OBJ}
 	@echo ${G}Success"   "[${NAME}]${X}
+	mkdir -p /tmp/test /tmp/test2
 	cp /bin/ls /tmp/test/
 
 ${OBJDIR}/%.o: ${SRCDIR}/%.s

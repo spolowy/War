@@ -437,7 +437,7 @@ size_t		disasm_length(const void *code, size_t codelen)
 	else if (opcode == 0xf3) {prefix |= OP_PREFIX_F3; goto next_opcode;}                                   /* get mandatory prefix */
 	else if (opcode == 0x9b) {prefix |= OP_PREFIX_9B; goto next_opcode;}                                   /* get mandatory prefix */
 	/* REX.W operand size override */
-	else if (opcode == 0x48) {prefix |= OP_PREFIX_REX; defdata = QWORD; goto next_opcode;} /* get mandatory prefix; set operand size to 32-bit; set memory size to 32-bit */
+	else if (opcode == 0x48) {prefix |= OP_PREFIX_REX; goto next_opcode;} /* get mandatory prefix; set operand size to 32-bit; set memory size to 32-bit */
 
 	/* chooses specific tables for different mappings */
 	if (prefix == MAP_9B) /* 0x9b <opcode> */

