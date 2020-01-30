@@ -407,6 +407,7 @@ size_t		disasm_length(const void *code, size_t codelen)
 	size_t		datasize = 0;        /* current data size    */
 	int8_t		prefix   = 0;        /* prefix(es)           */
 	int8_t		flags    = 0;        /* flag(s)              */
+	bool		rex      = false;    /* rex prefix           */
 
 	uint8_t		*p = (uint8_t*)code;
 	uint8_t		opcode;              /* current opcode */
@@ -424,22 +425,23 @@ size_t		disasm_length(const void *code, size_t codelen)
 	||  opcode == 0x64 || opcode == 0x65
 	||  opcode == 0x40 || opcode == 0x41 || opcode == 0x42 || opcode == 0x43
 	||  opcode == 0x44 || opcode == 0x45 || opcode == 0x46 || opcode == 0x47
-	||  opcode == 0x49 || opcode == 0x4a || opcode == 0x4b || opcode == 0x4c
-	||  opcode == 0x4d || opcode == 0x4e || opcode == 0x4f
 	||  opcode == 0xf0) {goto next_opcode;}
-	/* operand size override */
-	else if (opcode == 0x66) {defdata = WORD; prefix |= OP_PREFIX_66; goto next_opcode;}                   /* set operand size to 16-bit; get mandatory prefix */
-	/* address size override */
-	else if (opcode == 0x67) {defmem = DWORD; goto next_opcode;}                                           /* set memory size to 32-bit */
+	/* operand size overwrite */
+	else if (opcode == 0x66) {defdata = WORD; prefix |= OP_PREFIX_66; goto next_opcode;} /* set operand size to 16-bit; get mandatory prefix */
+	/* address size overwrite */
+	else if (opcode == 0x67) {defmem = DWORD; goto next_opcode;}                         /* set memory size to 32-bit */
 	/* mandatory prefixes    */
-	else if (opcode == 0x0f) {prefix |= OP_PREFIX_0F; goto next_opcode;}                                   /* get mandatory prefix */
-	else if (opcode == 0xf2) {prefix |= OP_PREFIX_F2; goto next_opcode;}                                   /* get mandatory prefix */
-	else if (opcode == 0xf3) {prefix |= OP_PREFIX_F3; goto next_opcode;}                                   /* get mandatory prefix */
-	else if (opcode == 0x9b) {prefix |= OP_PREFIX_9B; goto next_opcode;}                                   /* get mandatory prefix */
-	/* REX.W operand size override */
-	else if (opcode == 0x48) {prefix |= OP_PREFIX_REX; defdata = QWORD; goto next_opcode;} /* get mandatory prefix; set operand size to 32-bit; set memory size to 32-bit */
+	else if (opcode == 0x0f) {prefix |= OP_PREFIX_0F; goto next_opcode;}                 /* get mandatory prefix */
+	else if (opcode == 0xf2) {prefix |= OP_PREFIX_F2; goto next_opcode;}                 /* get mandatory prefix */
+	else if (opcode == 0xf3) {prefix |= OP_PREFIX_F3; goto next_opcode;}                 /* get mandatory prefix */
+	else if (opcode == 0x9b) {prefix |= OP_PREFIX_9B; goto next_opcode;}                 /* get mandatory prefix */
+	/* REX.W operand size overwrite */
+	else if (opcode == 0x48 || opcode == 0x49
+	     ||  opcode == 0x4a || opcode == 0x4b
+	     ||  opcode == 0x4c || opcode == 0x4d
+	     ||  opcode == 0x4e || opcode == 0x4f) {rex = true; goto next_opcode;} /* get mandatory prefix; set operand size to 32-bit; set memory size to 32-bit */
 
-	/* chooses specific tables for different mappings */
+	/* choose specific tables for different mappings */
 	if (prefix == MAP_9B) /* 0x9b <opcode> */
 	{
 		if (CHECK_TABLE(table_9b_opcode_modrm_ext, opcode))
@@ -480,7 +482,7 @@ size_t		disasm_length(const void *code, size_t codelen)
 	}
 	else                       /* <opcode>            */
 	{
-		if (CHECK_TABLE(table_opcode_imm64, opcode) && (prefix & OP_PREFIX_REX))
+		if (CHECK_TABLE(table_opcode_imm64, opcode) && (rex == true))
 			defdata = QWORD; /* exception for 64-bit immediates */
 		if (CHECK_TABLE(table_opcode_modrm_noext, opcode)
 		||  CHECK_TABLE(table_opcode_modrm_ext, opcode))

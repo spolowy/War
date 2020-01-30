@@ -57,6 +57,23 @@ void	*memcpy(void *dst, void *src, size_t n)
 	return dst;
 }
 
+void	*revmemcpy(void *dst, void *src, size_t n)
+{
+	unsigned char	*dest;
+	unsigned char	*source;
+	size_t		i;
+
+	dest = (unsigned char*)dst;
+	source = (unsigned char*)src;
+	i = 0;
+	while (i < n)
+	{
+		dest[i] = source[n - i - 1];
+		i++;
+	}
+	return dst;
+}
+
 char	*strcpy(char *dst, const char *src)
 {
 	int i = 0;
@@ -74,11 +91,21 @@ void            *memset(void *b, int c, unsigned long len)
 {
 	unsigned long   m;
 	unsigned char   *r;
+	unsigned long	value;
+	unsigned long	size_value;
+
+	value = (unsigned char)c;
+	size_value = sizeof(value);
+	while (size_value--)
+	{
+		value <<= 8;
+		value += (unsigned char)c;
+	}
 
 	m = len >> 3;
 	r = b + (m << 3);
 	while (m--)
-		((unsigned long*)b)[m] = c;
+		((unsigned long*)b)[m] = value;
 	len &= 7;
 	while (len--)
 		r[len] = c;

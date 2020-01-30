@@ -6,7 +6,7 @@
 /*   By: anselme <anselme@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/12/11 20:54:46 by anselme           #+#    #+#             */
-/*   Updated: 2019/12/26 23:51:52 by anselme          ###   ########.fr       */
+/*   Updated: 2020/01/16 23:03:31 by ichkamo          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,112 +19,67 @@
 #include "errors.h"
 #include "position_independent.h"
 
+/* ask your mom */
+#define BIT32_OVERFLOW	(~(uint64_t)~(uint32_t)0)
+
 #define CYPHER		0
 #define DECYPHER	1
 
-#define IMM_IB		1
-#define IMM_IW		2
-#define IMM_ID		4
-#define IMM_IO		8
+#define IB		1
+#define IW		2
+#define ID		4
+#define IO		8
 
-#define ENCODE_VALUE(value, mask, shift_bit)	((value & mask) << shift_bit)
+#define REX		(1 << 0)
+#define OPP		(1 << 1)
+#define OPC		(1 << 2)
+#define MOD		(1 << 3)
+#define SIB		(1 << 4)
+#define DSP		(1 << 5)
+#define IMM		(1 << 6)
 
 enum
 {
 	I_BASE,
-	XOR_RM64_IMM8,		// REX.W + 83 /6 ib XOR r/m64, imm8
-	ADD_RM64_IMM8,		// REX.W + 83 /0 ib ADD r/m64, imm8
-	SUB_RM64_IMM8,		// REX.W + 83 /5 ib SUB r/m64, imm8
+	XOR_RM64_IMM8,          /* REX.W + 83 /6 ib XOR r/m64, imm8 */
+	ADD_RM64_IMM8,          /* REX.W + 83 /0 ib ADD r/m64, imm8 */
+	SUB_RM64_IMM8,          /* REX.W + 83 /5 ib SUB r/m64, imm8 */
 
-	XOR_RAX_IMM32,		// REX.W + 35 id XOR RAX, imm32
-	ADD_RAX_IMM32,		// REX.W + 05 id ADD RAX, imm32
-	SUB_RAX_IMM32,		// REX.W + 2D id SUB RAX, imm32
+	XOR_RAX_IMM32,          /* REX.W + 35 id XOR RAX, imm32     */
+	ADD_RAX_IMM32,          /* REX.W + 05 id ADD RAX, imm32     */
+	SUB_RAX_IMM32,          /* REX.W + 2D id SUB RAX, imm32     */
 
-	ROR_RM64_IMM8,		// REX.W + C1 /1 ib
-	ROL_RM64_IMM8,		// REX.W + C1 /0 ib
-	BSWAP_R64,		// REX.W + 0F C8+rd, +0 for rax
+	ROR_RM64_IMM8,          /* REX.W + C1 /1 ib                 */
+	ROL_RM64_IMM8,          /* REX.W + C1 /0 ib                 */
+	BSWAP_R64,              /* REX.W + 0F C8+rd, +0 for rax     */
 	I_SIZE
 };
 
-struct	x86_64_encode
+struct x64_encode
 {
-	uint8_t		size:8;
-	uint8_t		prefix_rex:4;
-	uint8_t		prefix_rex_w:1;
-	uint8_t		prefix_rex_r:1;
-	uint8_t		prefix_rex_x:1;
-	uint8_t		prefix_rex_b:1;
-	uint8_t		opcode_escape:8;
-	uint8_t		opcode_two:8;
-	uint8_t		opcode_one:8;
-	uint8_t		mod:2;
-	uint8_t		reg:3;
-	uint8_t		rm:3;
-	uint8_t		scale:2;
-	uint8_t		index:3;
-	uint8_t		base:3;
-	uint32_t	displacement:32;
-	uint32_t	immediate:32;
-}__attribute__((packed));
+	uint8_t		encode;
+	uint8_t		size;
+	uint8_t		rex;
+	uint8_t		escape;
+	uint8_t		opcode;
+	uint8_t		modrm;
+	uint8_t		sib;
+	uint8_t		displacement;
+	uint8_t		immediate;
+};
 
-static void		encode_instruction(uint8_t *buffer,
-				struct x86_64_encode i, uint64_t *seed)
+static struct x64_encode	select_instruction(uint64_t *seed, int8_t operation)
 {
-	uint64_t	immediate = random_inrange(seed, 0x1, 0x7fffffff);
-	uint8_t		operand_size = i.immediate;
-
-	if (operand_size == IMM_IB) immediate &= 0x7f;
-	else if (operand_size == IMM_IW) immediate &= 0x7fff;
-	else if (operand_size == IMM_ID) immediate &= 0x7fffffff;
-	else if (operand_size == IMM_IO) immediate &= 0x7fffffffffffffff;
-	else immediate &= 0x7fffffffffffffff;
-
-	/* REX prefix */
-	*buffer |= ENCODE_VALUE(i.prefix_rex, 0x07, 0x04);
-	*buffer |= ENCODE_VALUE(i.prefix_rex_w, 0x01, 0x03);
-	*buffer |= ENCODE_VALUE(i.prefix_rex_r, 0x01, 0x02);
-	*buffer |= ENCODE_VALUE(i.prefix_rex_x, 0x01, 0x01);
-	*buffer |= ENCODE_VALUE(i.prefix_rex_b, 0x01, 0x00);
-	if (*buffer) buffer++;
-	/* Opcode */
-	*buffer |= ENCODE_VALUE(i.opcode_escape, 0xff, 0x00);
-	if (*buffer) buffer++;
-	*buffer |= ENCODE_VALUE(i.opcode_two, 0xff, 0x00);
-	if (*buffer) buffer++;
-	*buffer |= ENCODE_VALUE(i.opcode_one, 0xff, 0x00);
-	if (*buffer) buffer++;
-	/* MOD/RM */
-	*buffer |= ENCODE_VALUE(i.mod, 0x03, 0x06);
-	*buffer |= ENCODE_VALUE(i.reg, 0x07, 0x03);
-	*buffer |= ENCODE_VALUE(i.rm, 0x07, 0x00);
-	if (*buffer) buffer++;
-	/* SIB */
-	*buffer |= ENCODE_VALUE(i.scale, 0x03, 0x06);
-	*buffer |= ENCODE_VALUE(i.index, 0x07, 0x03);
-	*buffer |= ENCODE_VALUE(i.base, 0x07, 0x00);
-	if (*buffer) buffer++;
-	/* Displacement */
-	if (i.displacement)
-		memcpy(buffer, &immediate, i.immediate);
-	if (*buffer) buffer += operand_size;
-	/* Immediate */
-	if (i.immediate)
-		memcpy(buffer, &immediate, i.immediate);
-	// if (*buffer) buffer += operand_size;
-}
-
-static struct x86_64_encode	select_instruction(uint64_t *seed, int8_t operation)
-{
-	struct x86_64_encode	instructions[I_SIZE];
-	instructions[XOR_RM64_IMM8] = (struct x86_64_encode){4, 0b0100,0b1,0,0,0, 0,   0,0x83, 0b11,0b110,0b000, 0,0,0, 0,IMM_IB};
-	instructions[ADD_RM64_IMM8] = (struct x86_64_encode){4, 0b0100,0b1,0,0,0, 0,   0,0x83, 0b11,0b000,0b000, 0,0,0, 0,IMM_IB};
-	instructions[SUB_RM64_IMM8] = (struct x86_64_encode){4, 0b0100,0b1,0,0,0, 0,   0,0x83, 0b11,0b101,0b000, 0,0,0, 0,IMM_IB};
-	instructions[XOR_RAX_IMM32] = (struct x86_64_encode){6, 0b0100,0b1,0,0,0, 0,   0,0x35,    0,    0,    0, 0,0,0, 0,IMM_ID};
-	instructions[ADD_RAX_IMM32] = (struct x86_64_encode){6, 0b0100,0b1,0,0,0, 0,   0,0x05,    0,    0,    0, 0,0,0, 0,IMM_ID};
-	instructions[SUB_RAX_IMM32] = (struct x86_64_encode){6, 0b0100,0b1,0,0,0, 0,   0,0x2d,    0,    0,    0, 0,0,0, 0,IMM_ID};
-	instructions[ROR_RM64_IMM8] = (struct x86_64_encode){4, 0b0100,0b1,0,0,0, 0,   0,0xc1, 0b11,0b001,0b000, 0,0,0, 0,IMM_IB};
-	instructions[ROL_RM64_IMM8] = (struct x86_64_encode){4, 0b0100,0b1,0,0,0, 0,   0,0xc1, 0b11,0b000,0b000, 0,0,0, 0,IMM_IB};
-	instructions[BSWAP_R64]     = (struct x86_64_encode){3, 0b0100,0b1,0,0,0, 0,0x0f,0xc8,    0,    0,    0, 0,0,0, 0,     0};
+	struct x64_encode	instructions[I_SIZE];
+	instructions[XOR_RM64_IMM8] = (struct x64_encode){.encode=REX|OPC|MOD|IMM, .size=4, .rex=0x48, .escape=0   , .opcode=0x83, .modrm=0xf0, .sib=0, .displacement=0, .immediate=IB};
+	instructions[ADD_RM64_IMM8] = (struct x64_encode){.encode=REX|OPC|MOD|IMM, .size=4, .rex=0x48, .escape=0   , .opcode=0x83, .modrm=0xc0, .sib=0, .displacement=0, .immediate=IB};
+	instructions[SUB_RM64_IMM8] = (struct x64_encode){.encode=REX|OPC|MOD|IMM, .size=4, .rex=0x48, .escape=0   , .opcode=0x83, .modrm=0xe8, .sib=0, .displacement=0, .immediate=IB};
+	instructions[XOR_RAX_IMM32] = (struct x64_encode){.encode=REX|OPC|IMM    , .size=6, .rex=0x48, .escape=0   , .opcode=0x35, .modrm=0   , .sib=0, .displacement=0, .immediate=ID};
+	instructions[ADD_RAX_IMM32] = (struct x64_encode){.encode=REX|OPC|IMM    , .size=6, .rex=0x48, .escape=0   , .opcode=0x05, .modrm=0   , .sib=0, .displacement=0, .immediate=ID};
+	instructions[SUB_RAX_IMM32] = (struct x64_encode){.encode=REX|OPC|IMM    , .size=6, .rex=0x48, .escape=0   , .opcode=0x2d, .modrm=0   , .sib=0, .displacement=0, .immediate=ID};
+	instructions[ROR_RM64_IMM8] = (struct x64_encode){.encode=REX|OPC|MOD|IMM, .size=4, .rex=0x48, .escape=0   , .opcode=0xc1, .modrm=0xc8, .sib=0, .displacement=0, .immediate=IB};
+	instructions[ROL_RM64_IMM8] = (struct x64_encode){.encode=REX|OPC|MOD|IMM, .size=4, .rex=0x48, .escape=0   , .opcode=0xc1, .modrm=0xc0, .sib=0, .displacement=0, .immediate=IB};
+	instructions[BSWAP_R64]     = (struct x64_encode){.encode=REX|OPP|OPC    , .size=3, .rex=0x48, .escape=0x0f, .opcode=0xc8, .modrm=0   , .sib=0, .displacement=0, .immediate=0 };
 
 	int			instructions_match[I_SIZE];
 	instructions_match[XOR_RM64_IMM8] = XOR_RM64_IMM8;
@@ -145,9 +100,31 @@ static struct x86_64_encode	select_instruction(uint64_t *seed, int8_t operation)
 		return instructions[instructions_match[instruction]];
 }
 
-static void	generate_shuffler(char *buffer, uint64_t seed, size_t size)
+static void	encode_instruction(uint8_t *buffer, struct x64_encode i, uint64_t *seed)
 {
-	struct x86_64_encode	i;
+	uint64_t	displacement = 0; /* not implemented */
+	uint64_t	immediate    = 0;
+	uint8_t		operand_size = i.immediate;
+
+	/* choose an immediate value from a 1, 2, 4 or 8 byte range according to the operand size of the instruction */
+	if      (operand_size == IB) {immediate = random_inrange(seed, 0x1, 0x7f);}
+	else if (operand_size == IW) {immediate = random_inrange(seed, 0x80, 0x7fff);}
+	else if (operand_size == ID) {immediate = random_inrange(seed, 0x8000, 0x7fffffff);}
+	else if (operand_size == IO) {immediate = random_inrange(seed, 0x800000000, 0x7fffffffffffffff);}
+
+	if (i.encode & REX) {*buffer = i.rex;    buffer++;}
+	if (i.encode & OPP) {*buffer = i.escape; buffer++;}
+	if (i.encode & OPC) {*buffer = i.opcode; buffer++;}
+	if (i.encode & MOD) {*buffer = i.modrm;  buffer++;}
+	if (i.encode & SIB) {*buffer = i.sib;    buffer++;}
+
+	if (i.encode & DSP) {memcpy(buffer, &displacement, operand_size); buffer += operand_size;}
+	if (i.encode & IMM) {memcpy(buffer, &immediate, operand_size);    buffer += operand_size;}
+}
+
+static void	generate_shuffler(uint8_t *buffer, uint64_t seed, size_t size)
+{
+	struct x64_encode	i;
 
 	bzero(buffer, size);
 
@@ -159,15 +136,15 @@ static void	generate_shuffler(char *buffer, uint64_t seed, size_t size)
 			memset(buffer, 0x90, size);
 			break;
 		}
-		encode_instruction((uint8_t*)buffer, i, &seed);
+		encode_instruction(buffer, i, &seed);
 		buffer += i.size;
 		size -= i.size;
 	}
 }
 
-static void	generate_unshuffler(char *buffer, uint64_t seed, size_t size)
+static void	generate_unshuffler(uint8_t *buffer, uint64_t seed, size_t size)
 {
-	struct x86_64_encode	i;
+	struct x64_encode	i;
 
 	bzero(buffer, size);
 	buffer += size;
@@ -182,7 +159,7 @@ static void	generate_unshuffler(char *buffer, uint64_t seed, size_t size)
 			break;
 		}
 		buffer -= i.size;
-		encode_instruction((uint8_t*)buffer, i, &seed);
+		encode_instruction(buffer, i, &seed);
 		size -= i.size;
 	}
 }
@@ -194,13 +171,13 @@ static void	generate_unshuffler(char *buffer, uint64_t seed, size_t size)
 **   - returns a safe pointer to the middle of the buffer
 **   - returns a NULL safe pointer in case size is too small
 */
-static struct safe_ptr    generate_loop_frame(char *buffer, size_t size)
+static struct safe_ptr    generate_loop_frame(void *buffer, size_t size)
 {
 	PD_ARRAY(uint8_t, header,
 		0x48, 0xc1, 0xee, 0x03,             /*     shr rsi, 0x3       */
 		0x48, 0xc1, 0xe6, 0x03,             /*     shl rsi, 0x3       */
 		0x48, 0x85, 0xf6,                   /* cypher: test rsi, rsi  */
-		0x0f, 0x84, 0x14, 0x00, 0x00, 0x00, /*     jz cypher_end      */
+		0x0f, 0x84, 0x13, 0x00, 0x00, 0x00, /*     jz cypher_end      */
 		0x48, 0x8b, 0x07                    /*     mov rax, [rdi]     */
 	);
 
@@ -215,19 +192,19 @@ static struct safe_ptr    generate_loop_frame(char *buffer, size_t size)
 	if (size < sizeof(footer) + sizeof(header))
 		return (struct safe_ptr){NULL, 0};
 
-	char	*remaining_buffer = buffer + sizeof(header);
+	void	*remaining_buffer = buffer + sizeof(header);
 	size_t	remaining_size    = size - sizeof(footer) - sizeof(header);
 
-	int16_t *rel_cypher_end = (int16_t *)&header[13];
-	int16_t *rel_cypher     = (int16_t *)&footer[12];
+	uint32_t	*rel_cypher_end = (uint32_t*)&header[13];
+	uint32_t	*rel_cypher     = (uint32_t*)&footer[12];
 
-	// check for overflows and underflows
-	if (*rel_cypher_end + (uint16_t)remaining_size < *rel_cypher_end
-	|| *rel_cypher - (uint16_t)remaining_size > *rel_cypher)
+	/* check for overflows and underflows */
+	if ((*rel_cypher_end + remaining_size) & BIT32_OVERFLOW
+	|| (*rel_cypher - remaining_size) > *rel_cypher)
 		return (struct safe_ptr){NULL, 0};
 
-	*rel_cypher_end += (uint16_t)remaining_size;
-	*rel_cypher     -= (uint16_t)remaining_size;
+	*rel_cypher_end += (uint32_t)remaining_size;
+	*rel_cypher     -= (uint32_t)remaining_size;
 
 	memcpy(buffer, header, sizeof(header));
 	memcpy(buffer + size - sizeof(footer), footer, sizeof(footer));
@@ -235,7 +212,7 @@ static struct safe_ptr    generate_loop_frame(char *buffer, size_t size)
 	return (struct safe_ptr){remaining_buffer, remaining_size};
 }
 
-bool		generate_cypher(char *buffer, uint64_t seed, size_t size)
+bool		generate_cypher(void *buffer, uint64_t seed, size_t size)
 {
 	struct safe_ptr	frame;
 
@@ -246,7 +223,7 @@ bool		generate_cypher(char *buffer, uint64_t seed, size_t size)
 	return true;
 }
 
-bool		generate_decypher(char *buffer, uint64_t seed, size_t size)
+bool		generate_decypher(void *buffer, uint64_t seed, size_t size)
 {
 	struct safe_ptr	frame;
 

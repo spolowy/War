@@ -6,15 +6,21 @@
 ;    By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+         ;
 ;                                                 +#+#+#+#+#+   +#+            ;
 ;    Created: 2019/02/14 15:50:09 by agrumbac          #+#    #+#              ;
-;    Updated: 2019/12/11 20:57:41 by anselme          ###   ########.fr        ;
+;    Updated: 2020/01/04 19:33:46 by ichkamo          ###   ########.fr        ;
 ;                                                                              ;
 ; **************************************************************************** ;
 
 ;void decypher(char *data, size_t size);
 
 section .text
+	global wrap_decypher
 	global decypher
 	global decypher_end
+
+;stack calling convention wrapper
+wrap_decypher:
+	mov rsi, [rsp + 8]
+	mov rdi, [rsp + 16]
 
 decypher:
 	db "               _   _               "

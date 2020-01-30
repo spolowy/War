@@ -6,7 +6,7 @@
 /*   By: agrumbac <agrumbac@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/05 06:32:25 by agrumbac          #+#    #+#             */
-/*   Updated: 2019/12/27 00:44:00 by anselme          ###   ########.fr       */
+/*   Updated: 2020/01/12 19:08:39 by ichkamo          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 
 #include "accessors.h"
+#include "loader.h"
 #include "syscall.h"
 #include "errors.h"
 #include "compiler_utils.h"
@@ -24,17 +25,15 @@
 ** returns NULL if requested memory is out of range
 */
 
-#define VIRUS_SIZE	((uint64_t)start - (uint64_t)loader_entry)
-
 __warn_unused_result
-void			*safe(struct safe_ptr ref, size_t offset, size_t size)
+void	*safe(struct safe_ptr ref, size_t offset, size_t size)
 {
 	if (offset + size > ref.size || offset + size < offset)
 		return (NULL);
 	return (ref.ptr + offset);
 }
 
-bool			free_accessor(struct safe_ptr *ref)
+bool	free_accessor(struct safe_ptr *ref)
 {
 	if (ref->ptr)
 	{
@@ -45,7 +44,7 @@ bool			free_accessor(struct safe_ptr *ref)
 }
 
 __warn_unused_result
-bool			init_original_safe(struct safe_ptr *accessor, const char *filename)
+bool	init_original_safe(struct safe_ptr *accessor, const char *filename)
 {
 	void		*ptr;
 	struct stat	buf;
@@ -68,12 +67,11 @@ bool			init_original_safe(struct safe_ptr *accessor, const char *filename)
 }
 
 __warn_unused_result
-bool			init_clone_safe(struct safe_ptr *accessor, const size_t original_filesize)
+bool	init_clone_safe(struct safe_ptr *accessor, const size_t original_filesize)
 {
-	// TODO check if enough!
-	// accessor->size = original_filesize + VIRUS_SIZE + PAGE_ALIGNMENT;
-	// magic number was: 131072??????
-	accessor->size = original_filesize + 131072; // TODO WTF?!?!?!?
+	const size_t	payload_size = _start - loader_entry;
+
+	accessor->size = original_filesize + ALIGN(payload_size, PAGE_ALIGNMENT);
 	accessor->ptr  = sys_mmap(0, accessor->size, \
 		PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
 
@@ -84,8 +82,7 @@ bool			init_clone_safe(struct safe_ptr *accessor, const size_t original_filesize
 }
 
 __warn_unused_result
-bool			write_file(const struct safe_ptr accessor, \
-				const char *filename)
+bool	write_file(const struct safe_ptr accessor, const char *filename)
 {
 	int	fd = sys_open(filename, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
 
