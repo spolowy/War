@@ -34,6 +34,7 @@ SRC =	loader.s                       \
 	virus/file_iterator.c          \
 	virus/find_entry.c             \
 	virus/generate_cypher.c        \
+	virus/generate_set_register.c  \
 	virus/infect.c                 \
 	virus/infection_engine.c       \
 	virus/log.c                    \
