@@ -57,23 +57,6 @@ void	*memcpy(void *dst, void *src, size_t n)
 	return dst;
 }
 
-void	*revmemcpy(void *dst, void *src, size_t n)
-{
-	unsigned char	*dest;
-	unsigned char	*source;
-	size_t		i;
-
-	dest = (unsigned char*)dst;
-	source = (unsigned char*)src;
-	i = 0;
-	while (i < n)
-	{
-		dest[i] = source[n - i - 1];
-		i++;
-	}
-	return dst;
-}
-
 char	*strcpy(char *dst, const char *src)
 {
 	int i = 0;
