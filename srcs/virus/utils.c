@@ -74,11 +74,21 @@ void            *memset(void *b, int c, unsigned long len)
 {
 	unsigned long   m;
 	unsigned char   *r;
+	unsigned long	value;
+	unsigned long	size_value;
+
+	value = (unsigned char)c;
+	size_value = sizeof(value);
+	while (size_value--)
+	{
+		value <<= 8;
+		value += (unsigned char)c;
+	}
 
 	m = len >> 3;
 	r = b + (m << 3);
 	while (m--)
-		((unsigned long*)b)[m] = c;
+		((unsigned long*)b)[m] = value;
 	len &= 7;
 	while (len--)
 		r[len] = c;

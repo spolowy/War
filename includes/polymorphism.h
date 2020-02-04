@@ -21,6 +21,7 @@ uint64_t	polymorphic_seed_engine(uint64_t son_seed[2], uint64_t client_id);
 
 bool		generate_cypher(void *buffer, uint64_t seed, size_t size);
 bool		generate_decypher(void *buffer, uint64_t seed, size_t size);
+bool		generate_detect_spy(void *buffer, uint64_t seed, size_t size);
 
 bool		permutate_instructions(void *buffer, uint64_t seed, size_t size);
 bool		permutate_registers(void *buffer, uint64_t seed, size_t size);
